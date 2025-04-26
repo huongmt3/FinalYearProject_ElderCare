@@ -2,14 +2,22 @@ import { NavLink } from "react-router-dom";
 import "./NavBar.css";
 import { ROUTE_PATH } from "../../../routes/route-path";
 import logo from "../../../assets/images/logo.svg";
+import { useSelector } from "react-redux";
+import { AppState } from "./../../../store/store";
 
 function Navbar() {
+  const user = useSelector((state: AppState) => state.user);
+  const role = user.role;
+  console.log(user);
+
   return (
     <header className="border-b border-gray-200 bg-white">
       <div className="container mx-auto px-4 py-3 flex items-center justify-between">
         <div className="flex items-center space-x-8">
           {/* <div className="bg-gray-300 rounded-full px-4 py-2 text-gray-700 font-semibold">LOGO</div> */}
-          <img src={logo} alt="logo" className="w-30" />
+          <NavLink to={ROUTE_PATH.HOME}>
+            <img src={logo} alt="logo" className="w-30" />
+          </NavLink>
           <nav className="hidden md:flex space-x-8">
             <NavLink
               to={ROUTE_PATH.LOGIN}
@@ -27,62 +35,62 @@ function Navbar() {
             >
               Sign Up
             </NavLink>
-            <NavLink
+            {/* <NavLink
               to={ROUTE_PATH.HOME}
               className={({ isActive }) =>
                 isActive ? "text-gray-900 border-b-2 border-gray-900 pb-3 font-medium" : "text-gray-600 hover:text-gray-900"
               }
             >
               Home
-            </NavLink>
-            <NavLink
+            </NavLink> */}
+            {(role === "user" || role === "professional") && <NavLink
               to={ROUTE_PATH.NOTIFICATIONS}
               className={({ isActive }) =>
                 isActive ? "text-gray-900 border-b-2 border-gray-900 pb-3 font-medium" : "text-gray-600 hover:text-gray-900"
               }
             >
               Notifications
-            </NavLink>
-            <NavLink
+            </NavLink>}
+            {role === "professional" && <NavLink
               to={ROUTE_PATH.APPOINTMENTS}
               className={({ isActive }) =>
                 isActive ? "text-gray-900 border-b-2 border-gray-900 pb-3 font-medium" : "text-gray-600 hover:text-gray-900"
               }
             >
               Appointments
-            </NavLink>
-            <NavLink
+            </NavLink>}
+            {role === "professional" && <NavLink
               to={ROUTE_PATH.PROFESSIONAL_PROFILE}
               className={({ isActive }) =>
                 isActive ? "text-gray-900 border-b-2 border-gray-900 pb-3 font-medium" : "text-gray-600 hover:text-gray-900"
               }
             >
               PRO Profile
-            </NavLink>
-            <NavLink
+            </NavLink>}
+            {role === "user" && <NavLink
               to={ROUTE_PATH.USER_PROFILE}
               className={({ isActive }) =>
                 isActive ? "text-gray-900 border-b-2 border-gray-900 pb-3 font-medium" : "text-gray-600 hover:text-gray-900"
               }
             >
               User Profile
-            </NavLink>
-            <NavLink
+            </NavLink>}
+            {role === "user" && <NavLink
               to={ROUTE_PATH.PROFESSIONAL_LISTING}
               className={({ isActive }) =>
                 isActive ? "text-gray-900 border-b-2 border-gray-900 pb-3 font-medium" : "text-gray-600 hover:text-gray-900"
               }
             >
               Professional Listing
-            </NavLink>
-            <NavLink
+            </NavLink>}
+            {/* <NavLink
               to={ROUTE_PATH.APPOINTMENT_BOOKING}
               className={({ isActive }) =>
                 isActive ? "text-gray-900 border-b-2 border-gray-900 pb-3 font-medium" : "text-gray-600 hover:text-gray-900"
               }
             >
               Booking
-            </NavLink>
+            </NavLink> */}
           </nav>
         </div>
         <div className="flex items-center space-x-3">

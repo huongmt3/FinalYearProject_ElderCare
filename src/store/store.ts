@@ -6,7 +6,7 @@ import { persistStore, persistReducer } from "redux-persist";
 const persist = {
   key: "elder-care",
   storage,
-  whitelist: ["ui"],
+  whitelist: ["ui", "user"],
 };
 
 const persistedReducer = persistReducer(persist, reducer);

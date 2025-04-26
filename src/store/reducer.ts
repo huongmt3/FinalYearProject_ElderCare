@@ -1,5 +1,5 @@
-import { combineReducers } from "@reduxjs/toolkit";
-import { createSlice } from "@reduxjs/toolkit";
+import { combineReducers, createSlice } from "@reduxjs/toolkit";
+import userReducer from "./userSlice";
 
 // Create a UI slice for frontend-only state management
 const uiSlice = createSlice({
@@ -24,6 +24,7 @@ export const { toggleTheme, toggleSidebar } = uiSlice.actions;
 
 const reducers = {
   ui: uiSlice.reducer,
+  user: userReducer,
   // You can add other non-backend related reducers here
 };
 

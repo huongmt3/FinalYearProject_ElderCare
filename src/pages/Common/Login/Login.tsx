@@ -4,12 +4,16 @@ import { ROUTE_PATH } from "../../../routes/route-path";
 import toast from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
 import { FIREBASE_AUTH } from "../../../utils/firebaseConfig";
-import { signInWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { FIREBASE_FIRESTORE } from "../../../utils/firebaseConfig";
+import { useDispatch } from "react-redux";
+import { setUser } from "./../../../store/userSlice";
 
 function Login() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+
   const [formData, setFormData] = useState({
     email: "",
     password: "",
@@ -26,19 +30,14 @@ function Login() {
     e.preventDefault();
     setLoading(true);
     try {
-      // Authenticate the user
-      const userCredential = await signInWithEmailAndPassword(
-        FIREBASE_AUTH,
-        formData.email,
-        formData.password
-      );
-  
+
       //Fetch user data from Firestore
-      const userDocRef = doc(FIREBASE_FIRESTORE, "users", userCredential.user.uid);
+      const userDocRef = doc(FIREBASE_FIRESTORE, "account", formData.email);
       const userDoc = await getDoc(userDocRef);
-  
+
       if (userDoc.exists()) {
-        console.log("User data:", userDoc.data());
+        const userData = userDoc.data();
+        dispatch(setUser({ email: userData.email, role: userData.role }));
         toast.success("Logged In Successfully!");
         navigate(ROUTE_PATH.HOME);
       } else {
@@ -103,36 +102,36 @@ function Login() {
               </button>
             </div>
           </div>
-          
+
           <div className="text-center text-sm text-gray-500 my-4">
             Or continue with
           </div>
-          
-          <button 
-            type="button" 
+
+          <button
+            type="button"
             className="w-full flex gap-2 items-center justify-center p-2 border border-gray-300 rounded-md hover:bg-gray-50"
             onClick={handleGoogleLogin}
           >
-            <img 
-              src="https://www.google.com/favicon.ico" 
-              alt="Google" 
-              className="w-4 h-4" 
+            <img
+              src="https://www.google.com/favicon.ico"
+              alt="Google"
+              className="w-4 h-4"
             />
             Google Account
           </button>
-          
-          <button 
-            type="submit" 
+
+          <button
+            type="submit"
             className="w-full mt-4 py-2 px-4 bg-[#00a67d] hover:bg-[#00a67d]/90 text-white rounded-md font-medium"
             disabled={loading}
           >
             {loading ? "LOGGING IN..." : "LOGIN"}
           </button>
-          
+
           <div className="text-center mt-4">
             <span className="text-sm text-gray-500 mr-1">Don't have an account?</span>
-            <Link 
-              to={ROUTE_PATH.SIGNUP} 
+            <Link
+              to={ROUTE_PATH.SIGNUP}
               className="text-sm text-[#00a67d] hover:underline"
             >
               Sign up

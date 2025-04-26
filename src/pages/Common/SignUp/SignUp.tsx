@@ -3,11 +3,13 @@ import { Link, useNavigate } from "react-router-dom";
 import { ROUTE_PATH } from "../../../routes/route-path";
 import toast from "react-hot-toast";
 import { Eye, EyeOff, Upload } from "lucide-react";
-import { FIREBASE_AUTH, FIREBASE_DB, FIREBASE_FIRESTORE } from "../../../utils/firebaseConfig";
+import { FIREBASE_AUTH, FIREBASE_FIRESTORE } from "../../../utils/firebaseConfig";
 import { createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { setDoc } from "firebase/firestore";
 import man from '../../../assets/images/man.png';
-import { doc, getDoc } from "firebase/firestore";
+import { doc } from "firebase/firestore";
+import { useDispatch } from "react-redux";
+import { setUser } from "./../../../store/userSlice";
 
 // Role and Status types
 const ROLES = {
@@ -26,8 +28,9 @@ const DEFAULT_AVATAR = "https://ui-avatars.com/api/?background=random&name=";
 
 function Signup() {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [formData, setFormData] = useState({
     fullName: "",
     email: "",
@@ -63,7 +66,7 @@ function Signup() {
 
   const saveUserToDatabase = async (userId: string, userData: any) => {
     try {
-      const userRef = doc(FIREBASE_FIRESTORE, `account/${userId}`);
+      const userRef = doc(FIREBASE_FIRESTORE, `account/${userData.email}`);
       await setDoc(userRef, {
         id: userId,
         fullName: userData.fullName,
@@ -101,12 +104,14 @@ function Signup() {
         formData.email,
         formData.password
       );
-      
+
       await saveUserToDatabase(userCredential.user.uid, {
         ...formData,
         avatarUrl: previewImage
       });
-      
+
+      dispatch(setUser({ email: formData.email, role: formData.role }));
+
       toast.success("Welcome! Your account has been created successfully. Redirecting to homepage...", {
         duration: 3000,
         position: 'top-center',
@@ -152,7 +157,7 @@ function Signup() {
     try {
       const provider = new GoogleAuthProvider();
       const result = await signInWithPopup(FIREBASE_AUTH, provider);
-      
+
       await saveUserToDatabase(result.user.uid, {
         fullName: result.user.displayName,
         email: result.user.email,
@@ -267,7 +272,7 @@ function Signup() {
               </div>
             </div>
 
-            <div 
+            <div
               className="border-2 border-dashed border-gray-200 rounded-md p-4 cursor-pointer hover:border-[#00a67d] transition-colors bg-gray-50"
               onClick={() => fileInputRef.current?.click()}
             >
@@ -280,9 +285,9 @@ function Signup() {
               />
               {previewImage ? (
                 <div className="relative">
-                  <img 
-                    src={previewImage} 
-                    alt="Preview" 
+                  <img
+                    src={previewImage}
+                    alt="Preview"
                     className="w-full h-32 object-cover rounded-md"
                   />
                   <button
@@ -326,37 +331,37 @@ function Signup() {
               </label>
             </div>
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className="w-full py-3 px-4 bg-emerald-600 text-white font-medium rounded-md hover:bg-emerald-700 transition-colors"
               disabled={loading}
             >
               {loading ? "CREATING ACCOUNT..." : "SIGN UP"}
             </button>
-{/* 
+            {/* 
             <div className="relative flex items-center justify-center">
               <div className="border-t border-gray-200 w-full"></div>
               <span className="bg-white px-4 text-sm text-gray-500">Or continue with</span>
               <div className="border-t border-gray-200 w-full"></div>
             </div> */}
 
-            <button 
-              type="button" 
+            <button
+              type="button"
               className="w-full flex gap-2 items-center justify-center p-3 border border-gray-200 rounded-md hover:bg-gray-50"
               onClick={handleGoogleSignup}
             >
-              <img 
-                src="https://www.google.com/favicon.ico" 
-                alt="Google" 
-                className="w-4 h-4" 
+              <img
+                src="https://www.google.com/favicon.ico"
+                alt="Google"
+                className="w-4 h-4"
               />
               GOOGLE ACCOUNT
             </button>
 
             <div className="text-center">
               <span className="text-sm text-gray-500">Already have an account? </span>
-              <Link 
-                to={ROUTE_PATH.LOGIN} 
+              <Link
+                to={ROUTE_PATH.LOGIN}
                 className="text-sm text-[#00a67d] hover:underline"
               >
                 Log in
@@ -368,9 +373,9 @@ function Signup() {
 
       {/* Right side - Image */}
       <div className="hidden lg:block w-1/2">
-        <img 
-          src={man} 
-          alt="Professional" 
+        <img
+          src={man}
+          alt="Professional"
           className="w-full h-full object-cover"
         />
       </div>
