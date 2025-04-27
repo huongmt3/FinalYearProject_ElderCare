@@ -4,7 +4,7 @@ import { ROUTE_PATH } from "../../../routes/route-path";
 import toast from "react-hot-toast";
 import { Eye, EyeOff } from "lucide-react";
 import { FIREBASE_AUTH } from "../../../utils/firebaseConfig";
-import { GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { GoogleAuthProvider, signInWithEmailAndPassword, signInWithPopup } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
 import { FIREBASE_FIRESTORE } from "../../../utils/firebaseConfig";
 import { useDispatch } from "react-redux";
@@ -30,14 +30,21 @@ function Login() {
     e.preventDefault();
     setLoading(true);
     try {
-
       //Fetch user data from Firestore
       const userDocRef = doc(FIREBASE_FIRESTORE, "account", formData.email);
+      await signInWithEmailAndPassword(FIREBASE_AUTH, formData.email, formData.password);
+
       const userDoc = await getDoc(userDocRef);
 
       if (userDoc.exists()) {
         const userData = userDoc.data();
-        dispatch(setUser({ email: userData.email, role: userData.role }));
+
+        dispatch(setUser({
+          email: userData.email,
+          role: userData.role,
+          fullName: userData.fullName,
+          description: userData.description,
+        }));
         toast.success("Logged In Successfully!");
         navigate(ROUTE_PATH.HOME);
       } else {

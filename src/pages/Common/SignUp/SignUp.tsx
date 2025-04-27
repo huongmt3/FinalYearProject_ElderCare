@@ -75,7 +75,8 @@ function Signup() {
         status: userData.status,
         avatarUrl: userData.avatarUrl || getDefaultAvatarUrl(userData.fullName),
         createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString()
+        updatedAt: new Date().toISOString(),
+        description: ""
       });
     } catch (error: any) {
       console.error("Error saving user data:", error);
@@ -110,7 +111,12 @@ function Signup() {
         avatarUrl: previewImage
       });
 
-      dispatch(setUser({ email: formData.email, role: formData.role }));
+      dispatch(setUser({
+        email: formData.email,
+        role: formData.role,
+        fullName: formData.fullName,
+        description: "",
+      }));
 
       toast.success("Welcome! Your account has been created successfully. Redirecting to homepage...", {
         duration: 3000,

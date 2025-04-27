@@ -5,33 +5,59 @@ import { Input } from '../../../components/ui/Input';
 import { TextArea } from '../../../components/ui/TextArea';
 import { Card, CardContent } from '../../../components/ui/card';
 import { Search, Bell } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { AppState } from "./../../../store/store";
+import { FIREBASE_FIRESTORE } from "../../../utils/firebaseConfig";
+import { doc, updateDoc } from "firebase/firestore";
+import toast from "react-hot-toast";
+import { updateUser } from "./../../../store/userSlice";
 
 function UserProfile() {
+  const dispatch = useDispatch();
+  const user = useSelector((state: AppState) => state.user);
   const [isEditMode, setIsEditMode] = useState(false); // State to toggle edit mode
-  const [email, setEmail] = useState("alexarawles@gmail.com");
-  const [newEmail, setNewEmail] = useState(""); // State for new email input
+  const [email, setEmail] = useState(user.email);
+  const [fullName, setFullName] = useState(user.fullName);
+  // const [newEmail, setNewEmail] = useState(""); // State for new email input
   const [profileData, setProfileData] = useState({
-    fullName: "Alexa Rawles",
-    password: "Your Password",
-    description: "Your Description",
+    fullName: user.fullName,
+    // password: "Your Password",
+    description: user.description,
   });
 
-  const handleAddEmail = () => {
-    if (newEmail) {
-      setEmail(newEmail); // Update the email with the new value
-      setNewEmail(""); // Clear the new email input
+  // const handleAddEmail = () => {
+  //   if (newEmail) {
+  //     setEmail(newEmail); // Update the email with the new value
+  //     setNewEmail(""); // Clear the new email input
+  //   }
+  // };
+
+  const handleSave = async () => {
+    console.log("Saved profile data:", profileData);
+    const userRef = doc(FIREBASE_FIRESTORE, `account/${user.email}`);
+
+    try {
+      await updateDoc(userRef, profileData);  
+      dispatch(updateUser({
+        fullName: profileData.fullName,
+        description: profileData.description,
+      }));
+      setFullName(profileData.fullName);
+      toast.success("Profile Updated Successfully!");
+      setIsEditMode(false);
+    }
+    catch (error: any) {
+      toast.success(error.message);
     }
   };
 
-  const handleSave = () => {
-    console.log("Saved profile data:", profileData);
-    console.log("Saved email:", email);
-    setIsEditMode(false); // Exit edit mode
-  };
-
   const handleDiscard = () => {
-    console.log("Discard changes");
-    setNewEmail(""); // Clear the new email input
+    setProfileData({
+      fullName: user.fullName,
+      // password: "Your Password",
+      description: user.description,
+    })
+    // setNewEmail(""); // Clear the new email input
     setIsEditMode(false); // Exit edit mode
   };
 
@@ -44,7 +70,7 @@ function UserProfile() {
           <p className="text-sm text-gray-500">Tue, 07 June 2022</p>
         </div>
         <div className="flex items-center gap-4">
-          
+
           <Bell className="w-5 h-5 text-gray-500" />
           <Avatar>
             <AvatarImage src="https://github.com/shadcn.png" alt="Profile" />
@@ -89,7 +115,7 @@ function UserProfile() {
                 <AvatarFallback>AR</AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <h2 className="text-xl font-semibold">{profileData.fullName}</h2>
+                <h2 className="text-xl font-semibold">{fullName}</h2>
                 <p className="text-gray-500">{email}</p>
               </div>
               {isEditMode ? (
@@ -111,16 +137,16 @@ function UserProfile() {
                   onChange={(e) => setProfileData({ ...profileData, fullName: e.target.value })}
                   className={`bg-gray-50 ${isEditMode ? "bg-white" : ""}`}
                   readOnly={!isEditMode}
+                  required
                 />
               </div>
               <div>
                 <h3 className="font-medium mb-2">Password</h3>
                 <Input
-                  value={profileData.password}
+                  value={"Your Password"}
                   type="password"
-                  onChange={(e) => setProfileData({ ...profileData, password: e.target.value })}
                   className={`bg-gray-50 ${isEditMode ? "bg-white" : ""}`}
-                  readOnly={!isEditMode}
+                  readOnly
                 />
               </div>
             </div>
@@ -149,12 +175,12 @@ function UserProfile() {
                       </svg>
                     </div>
                     <div>
-                      <p className="text-sm font-medium">{email}</p>
+                      <p className="text-sm font-medium">{user.email}</p>
                     </div>
                   </CardContent>
                 </Card>
               </div>
-              {isEditMode && (
+              {/* {isEditMode && (
                 <div className="flex items-center gap-2">
                   <Input
                     value={newEmail}
@@ -169,7 +195,7 @@ function UserProfile() {
                     Add
                   </Button>
                 </div>
-              )}
+              )} */}
             </div>
           </div>
         </div>
