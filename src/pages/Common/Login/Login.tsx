@@ -44,6 +44,8 @@ function Login() {
           role: userData.role,
           fullName: userData.fullName,
           description: userData.description,
+          pricing: userData.pricing,
+          availableTimes: userData.availableTimes,
         }));
         toast.success("Logged In Successfully!");
         navigate(ROUTE_PATH.HOME);

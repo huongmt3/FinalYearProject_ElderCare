@@ -16,7 +16,6 @@ function UserProfile() {
   const dispatch = useDispatch();
   const user = useSelector((state: AppState) => state.user);
   const [isEditMode, setIsEditMode] = useState(false); // State to toggle edit mode
-  const [email, setEmail] = useState(user.email);
   const [fullName, setFullName] = useState(user.fullName);
   // const [newEmail, setNewEmail] = useState(""); // State for new email input
   const [profileData, setProfileData] = useState({
@@ -33,11 +32,10 @@ function UserProfile() {
   // };
 
   const handleSave = async () => {
-    console.log("Saved profile data:", profileData);
     const userRef = doc(FIREBASE_FIRESTORE, `account/${user.email}`);
 
     try {
-      await updateDoc(userRef, profileData);  
+      await updateDoc(userRef, profileData);
       dispatch(updateUser({
         fullName: profileData.fullName,
         description: profileData.description,
@@ -116,7 +114,7 @@ function UserProfile() {
               </Avatar>
               <div className="flex-1">
                 <h2 className="text-xl font-semibold">{fullName}</h2>
-                <p className="text-gray-500">{email}</p>
+                <p className="text-gray-500">{user.email}</p>
               </div>
               {isEditMode ? (
                 <div className="flex gap-4">

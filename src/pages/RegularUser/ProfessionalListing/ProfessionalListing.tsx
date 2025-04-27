@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from '../../../components/ui/Avatar';
 import { Badge } from '../../../components/ui/Badge';
 import { Button } from '../../../components/ui/Button';
@@ -14,65 +14,125 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from '../../../components/ui/Pagination';
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { FIREBASE_FIRESTORE } from "../../../utils/firebaseConfig";
+import { useNavigate } from "react-router-dom";
 
-const professionals = [
-  {
-    id: 1,
-    title: "Create An LMS Website With LearnPress",
-    category: "Mental Health & Well-Being",
-    image: "https://plus.unsplash.com/premium_photo-1658506671316-0b293df7c72b?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-    price: "$125/hour",
-    rating: 4,
-  },
-  {
-    id: 2,
-    title: "Create An LMS Website With LearnPress",
-    category: "Pulmonology",
-    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
-    price: "$125/hour",
-    rating: 4,
-  },
-  {
-    id: 3,
-    title: "Create An LMS Website With LearnPress",
-    category: "Orthopedics",
-    image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
-    price: "$125/hour",
-    rating: 4,
-  },
-  {
-    id: 4,
-    title: "Create An LMS Website With LearnPress",
-    category: "Neurology",
-    image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
-    price: "$125/hour",
-    rating: 4,
-  },
-  {
-    id: 5,
-    title: "Create An LMS Website With LearnPress",
-    category: "Cardiology",
-    image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
-    price: "$125/hour",
-    rating: 4,
-  },
-  {
-    id: 6,
-    title: "Create An LMS Website With LearnPress",
-    category: "Nutrition & Lifestyle Advice",
-    image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
-    price: "$125/hour",
-    rating: 4,
-  },
-];
+// const professionals = [
+//   {
+//     id: 1,
+//     title: "Create An LMS Website With LearnPress",
+//     category: "Mental Health & Well-Being",
+//     image: "https://plus.unsplash.com/premium_photo-1658506671316-0b293df7c72b?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+//     price: "$125/hour",
+//     rating: 4,
+//   },
+//   {
+//     id: 2,
+//     title: "Create An LMS Website With LearnPress",
+//     category: "Pulmonology",
+//     image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
+//     price: "$125/hour",
+//     rating: 4,
+//   },
+//   {
+//     id: 3,
+//     title: "Create An LMS Website With LearnPress",
+//     category: "Orthopedics",
+//     image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
+//     price: "$125/hour",
+//     rating: 4,
+//   },
+//   {
+//     id: 4,
+//     title: "Create An LMS Website With LearnPress",
+//     category: "Neurology",
+//     image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
+//     price: "$125/hour",
+//     rating: 4,
+//   },
+//   {
+//     id: 5,
+//     title: "Create An LMS Website With LearnPress",
+//     category: "Cardiology",
+//     image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
+//     price: "$125/hour",
+//     rating: 4,
+//   },
+//   {
+//     id: 6,
+//     title: "Create An LMS Website With LearnPress",
+//     category: "Nutrition & Lifestyle Advice",
+//     image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
+//     price: "$125/hour",
+//     rating: 4,
+//   },
+//   {
+//     id: 7,
+//     title: "Create An LMS Website With LearnPress",
+//     category: "Nutrition & Lifestyle Advice",
+//     image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
+//     price: "$125/hour",
+//     rating: 4,
+//   },
+//   // Add more items if needed
+// ];
+
+const ITEMS_PER_PAGE = 6;
 
 function ProfessionalListing() {
+  const navigate = useNavigate();
+  const [professionals, setProfessionals] = useState<any>([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function fetchAccounts() {
+      try {
+        // Truy cập vào collection "account"
+        const accountsColRef = collection(FIREBASE_FIRESTORE, "account");
+        const q = query(accountsColRef, where("role", "==", "professional"));
+        // Lấy dữ liệu từ Firestore
+        const querySnapshot = await getDocs(q);
+
+        // Lưu dữ liệu vào state
+        const accountList = querySnapshot.docs.map(doc => (
+          doc.data()
+        ));
+        setProfessionals(accountList);
+      } catch (error) {
+        console.error("Error getting accounts: ", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    // Gọi hàm fetchAccounts khi component mount
+    fetchAccounts();
+  }, []);
+
+  // Filter professionals based on search term
+  const filteredProfessionals = professionals.filter((professional: { fullName: string; }) =>
+    professional.fullName.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  // Calculate start and end index for pagination
+  const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+  const endIndex = startIndex + ITEMS_PER_PAGE;
+
+  // Paginate the filtered professionals
+  const currentProfessionals = filteredProfessionals.slice(startIndex, endIndex);
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchTerm(e.target.value);
+    setCurrentPage(1); // Reset to first page when search term changes
+  };
+
+  // Handle page change
+  const handlePageChange = (page: number) => {
+    setCurrentPage(page);
   };
 
   // Render star rating
@@ -86,6 +146,15 @@ function ProfessionalListing() {
       );
     }
     return stars;
+  };
+
+  const totalPages = Math.ceil(filteredProfessionals.length / ITEMS_PER_PAGE);
+
+  const handleNavigate = (professional: any) => {
+    // Truyền tham số 'name' qua state
+    navigate('/user/appointment-booking', {
+      state: professional
+    });
   };
 
   return (
@@ -104,30 +173,31 @@ function ProfessionalListing() {
             />
           </div>
         </div>
-
+        {loading && <div>Loading...</div>}
         {/* Professional Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-10">
-          {professionals.map((professional) => (
+          {currentProfessionals.map((professional: any) => (
             <Card key={professional.id} className="overflow-hidden border rounded-lg shadow-sm">
               <div className="relative">
                 <img
-                  src={professional.image}
-                  alt={professional.title}
+                  src={professional.avatarUrl}
+                  alt={professional.fullName}
                   className="w-full h-64 object-cover"
                 />
-                <Badge className="absolute top-4 left-4 bg-black text-white font-medium rounded-md">
+                {/* <Badge className="absolute top-4 left-4 bg-black text-white font-medium rounded-md">
                   {professional.category}
-                </Badge>
+                </Badge> */}
               </div>
               <CardContent className="p-6">
-                <div className="mb-2 text-gray-500">{professional.price}</div>
-                <h3 className="text-lg font-semibold mb-4">{professional.title}</h3>
+                <div className="mb-2 text-gray-500">{professional.pricing}</div>
+                <h3 className="text-lg font-semibold mb-4">{professional.fullName}</h3>
                 <div className="flex justify-between items-center">
-                  <div className="flex">{renderStarRating(professional.rating)}</div>
+                  <div className="flex">{renderStarRating(5)}</div>
                   <span className="text-xs text-gray-500 ml-1">(120+ Reviews)</span>
                   <Button
                     variant="outline"
                     className="text-teal-600 border-teal-600 hover:bg-teal-50 hover:text-teal-700"
+                    onClick={() => handleNavigate(professional)}
                   >
                     View More
                   </Button>
@@ -141,21 +211,36 @@ function ProfessionalListing() {
         <Pagination>
           <PaginationContent>
             <PaginationItem>
-              <PaginationPrevious href="#" />
+              <PaginationPrevious
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (currentPage > 1) handlePageChange(currentPage - 1);
+                }}
+              />
             </PaginationItem>
+            {[...Array(totalPages)].map((_, index) => (
+              <PaginationItem key={index}>
+                <PaginationLink
+                  href="#"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    handlePageChange(index + 1);
+                  }}
+                  isActive={index + 1 === currentPage}
+                >
+                  {index + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
             <PaginationItem>
-              <PaginationLink href="#" isActive>
-                1
-              </PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink href="#">2</PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationLink href="#">3</PaginationLink>
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationNext href="#" />
+              <PaginationNext
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  if (currentPage < totalPages) handlePageChange(currentPage + 1);
+                }}
+              />
             </PaginationItem>
           </PaginationContent>
         </Pagination>

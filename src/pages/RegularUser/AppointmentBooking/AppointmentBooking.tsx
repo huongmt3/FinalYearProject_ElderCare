@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { Button } from '../../../components/ui/Button';
 import { Card, CardContent } from '../../../components/ui/card';
 
@@ -68,11 +68,10 @@ function AppointmentBooking() {
               <Button
                 key={index}
                 variant={selectedTime === time ? "default" : "outline"}
-                className={`text-sm ${
-                  selectedTime === time
+                className={`text-sm ${selectedTime === time
                     ? "bg-emerald-600 text-white"
                     : "text-gray-700 border-gray-300 hover:bg-gray-100"
-                }`}
+                  }`}
                 onClick={() => setSelectedTime(time)}
               >
                 {time}
@@ -89,7 +88,7 @@ function AppointmentBooking() {
         <div>
           <Card className="border rounded-lg shadow-sm">
             <CardContent className="p-4 bg-gray-100">
-            <h2 className="text-lg font-semibold text-gray-900 mb-4">Overview</h2>
+              <h2 className="text-lg font-semibold text-gray-900 mb-4">Overview</h2>
               <p className="text-sm text-gray-700">
                 LearnPress is a comprehensive WordPress LMS Plugin for WordPress. This is one of
                 the best WordPress LMS Plugins which can be used to easily create & sell courses

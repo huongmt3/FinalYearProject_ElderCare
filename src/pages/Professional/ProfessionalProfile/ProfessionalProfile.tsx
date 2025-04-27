@@ -1,51 +1,96 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from '../../../components/ui/Avatar';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { TextArea } from '../../../components/ui/TextArea';
 import { Card, CardContent } from '../../../components/ui/card';
-import { Search, Bell } from "lucide-react";
+import { Bell } from "lucide-react";
+import { useDispatch, useSelector } from "react-redux";
+import { AppState } from "../../../store/store";
+import { FIREBASE_FIRESTORE } from "../../../utils/firebaseConfig";
+import { doc, updateDoc } from "firebase/firestore";
+import { updateUser } from "../../../store/userSlice";
+import toast from "react-hot-toast";
 
 function ProfessionalProfile() {
+  const dispatch = useDispatch();
+  const user = useSelector((state: AppState) => state.user);
   const [isEditMode, setIsEditMode] = useState(false); // State to toggle edit mode
-  const [email, setEmail] = useState("alexarawles@gmail.com");
-  const [newEmail, setNewEmail] = useState(""); // State for new email input
+  const [fullName, setFullName] = useState(user.fullName);
+  // const [email, setEmail] = useState("alexarawles@gmail.com");
+  // const [newEmail, setNewEmail] = useState(""); // State for new email input
   const [profileData, setProfileData] = useState({
-    fullName: "Alexa Rawles",
-    password: "Your Password",
-    pricing: "Your Pricing",
-    description: "Your Description",
+    fullName: user.fullName,
+    // password: "Your Password",
+    pricing: user.pricing,
+    description: user.description,
+    availableTimes: user.availableTimes,
   });
 
   const availableTimes = [
-    { id: 1, time: "8:15 - 9:00", selected: true },
-    { id: 2, time: "9:15 - 10:00", selected: true },
-    { id: 3, time: "10:15 - 11:00", selected: true },
-    { id: 4, time: "11:15 - 12:00", selected: true },
-    { id: 5, time: "14:15 - 15:00", selected: true },
-    { id: 6, time: "15:15 - 16:00", selected: true },
-    { id: 7, time: "16:15 - 17:00", selected: true },
-    { id: 8, time: "17:15 - 18:00", selected: true },
+    { id: 1, time: "8:15 - 9:00" },
+    { id: 2, time: "9:15 - 10:00" },
+    { id: 3, time: "10:15 - 11:00" },
+    { id: 4, time: "11:15 - 12:00" },
+    { id: 5, time: "14:15 - 15:00" },
+    { id: 6, time: "15:15 - 16:00" },
+    { id: 7, time: "16:15 - 17:00" },
+    { id: 8, time: "17:15 - 18:00" },
   ];
 
-  const handleAddEmail = () => {
-    if (newEmail) {
-      setEmail(newEmail); // Update the email with the new value
-      setNewEmail(""); // Clear the new email input
+  // const handleAddEmail = () => {
+  //   if (newEmail) {
+  //     setEmail(newEmail); // Update the email with the new value
+  //     setNewEmail(""); // Clear the new email input
+  //   }
+  // };
+
+  const handleSave = async () => {
+    const userRef = doc(FIREBASE_FIRESTORE, `account/${user.email}`);
+    try {
+      await updateDoc(userRef, profileData);
+      dispatch(updateUser({
+        fullName: profileData.fullName,
+        pricing: profileData.pricing,
+        description: profileData.description,
+        availableTimes: profileData.availableTimes,
+      }));
+      setFullName(profileData.fullName);
+      toast.success("Profile Updated Successfully!");
+      setIsEditMode(false); // Exit edit mode
+    }
+    catch (error: any) {
+      toast.success(error.message);
     }
   };
 
-  const handleSave = () => {
-    console.log("Saved profile data:", profileData);
-    console.log("Saved email:", email);
+  const handleDiscard = () => {
+    setProfileData({
+      fullName: user.fullName,
+      pricing: user.pricing,
+      description: user.description,
+      availableTimes: user.availableTimes
+    })
+    // setNewEmail(""); // Clear the new email input
     setIsEditMode(false); // Exit edit mode
   };
 
-  const handleDiscard = () => {
-    console.log("Discard changes");
-    setNewEmail(""); // Clear the new email input
-    setIsEditMode(false); // Exit edit mode
+  const handleTimeClick = (timeValue: string) => {
+    const isSelected = profileData.availableTimes.includes(timeValue);
+
+    if (isSelected) {
+      setProfileData({
+        ...profileData,
+        availableTimes: profileData.availableTimes.filter(t => t !== timeValue)
+      });
+    } else {
+      setProfileData({
+        ...profileData,
+        availableTimes: [...profileData.availableTimes, timeValue]
+      });
+    }
   };
+
 
   return (
     <div className="min-h-screen bg-background">
@@ -100,8 +145,8 @@ function ProfessionalProfile() {
                 <AvatarFallback>AR</AvatarFallback>
               </Avatar>
               <div className="flex-1">
-                <h2 className="text-xl font-semibold">{profileData.fullName}</h2>
-                <p className="text-gray-500">{email}</p>
+                <h2 className="text-xl font-semibold">{fullName}</h2>
+                <p className="text-gray-500">{user.email}</p>
               </div>
               {isEditMode ? (
                 <div className="flex gap-4">
@@ -127,11 +172,10 @@ function ProfessionalProfile() {
               <div>
                 <h3 className="font-medium mb-2">Password</h3>
                 <Input
-                  value={profileData.password}
+                  value="Your password"
                   type="password"
-                  onChange={(e) => setProfileData({ ...profileData, password: e.target.value })}
                   className={`bg-gray-50 ${isEditMode ? "bg-white" : ""}`}
-                  readOnly={!isEditMode}
+                  readOnly
                 />
               </div>
               <div>
@@ -171,12 +215,12 @@ function ProfessionalProfile() {
                         </svg>
                       </div>
                       <div>
-                        <p className="text-sm font-medium">{email}</p>
+                        <p className="text-sm font-medium">{user.email}</p>
                       </div>
                     </CardContent>
                   </Card>
                 </div>
-                {isEditMode && (
+                {/* {isEditMode && (
                   <div className="flex items-center gap-2">
                     <Input
                       value={newEmail}
@@ -191,7 +235,7 @@ function ProfessionalProfile() {
                       Add
                     </Button>
                   </div>
-                )}
+                )} */}
               </div>
 
               {/* Available Time */}
@@ -202,11 +246,11 @@ function ProfessionalProfile() {
                     <Button
                       key={time.id}
                       variant="outline"
-                      className={`rounded-md text-sm ${
-                        time.selected
-                          ? "bg-teal-500 hover:bg-teal-600 text-white border-teal-500"
-                          : "bg-gray-100 text-gray-700 hover:bg-gray-200"
-                      }`}
+                      className={`rounded-md text-sm ${profileData.availableTimes.includes(time.time)
+                        ? "bg-teal-500 hover:bg-teal-600 text-white border-teal-500"
+                        : "bg-gray-100 text-gray-700 hover:bg-gray-200"
+                        }`}
+                      onClick={() => handleTimeClick(time.time)}
                     >
                       {time.time}
                     </Button>

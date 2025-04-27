@@ -116,6 +116,8 @@ function Signup() {
         role: formData.role,
         fullName: formData.fullName,
         description: "",
+        pricing: "",
+        availableTimes: [],
       }));
 
       toast.success("Welcome! Your account has been created successfully. Redirecting to homepage...", {
