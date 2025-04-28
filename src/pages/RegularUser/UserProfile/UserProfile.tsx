@@ -31,6 +31,7 @@ function UserProfile() {
   //   }
   // };
 
+  // Update user profile
   const handleSave = async () => {
     const userRef = doc(FIREBASE_FIRESTORE, `account/${user.email}`);
 

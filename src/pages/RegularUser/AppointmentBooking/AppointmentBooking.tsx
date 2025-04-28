@@ -55,6 +55,7 @@ function AppointmentBooking() {
     });
   };
 
+  // Create schedule
   const handleCreateSchedule = async () => {
     try {
       const id = crypto.randomUUID();
@@ -85,6 +86,7 @@ function AppointmentBooking() {
     }
   };
 
+  // combine date and time => dateTime
   const parseTimeToDate = (timeString: string, baseDate: Date) => {
     const [timePart] = timeString.split('-').map(s => s.trim());
     let [hours, minutes] = timePart.split(':').map(Number);
@@ -96,6 +98,7 @@ function AppointmentBooking() {
     return baseDate.toISOString();
   }
 
+  // create noti for user
   const createNotificationForUser = async () => {
     try {
       const id = crypto.randomUUID();
@@ -114,6 +117,7 @@ function AppointmentBooking() {
     }
   }
 
+  // create noti for professional
   const createNotificationForProf = async () => {
     try {
       const id = crypto.randomUUID();
@@ -132,22 +136,21 @@ function AppointmentBooking() {
     }
   }
 
+  // Avoid appointment with duplicated date and time
   const resetAvailableTimes = async (dbDate: string) => {
     try {
-      console.log("reset");
-
       const schedulesRef = collection(FIREBASE_FIRESTORE, "schedule");
       let queryConditions = [
         where("profEmail", "==", professional.email),
         where("userEmail", "==", user.email),
+        where("date", "==", dbDate),
       ];
 
-      queryConditions.push(
-        where("date", "==", dbDate)
-      );
       const q = query(schedulesRef, ...queryConditions);
       const schedules = await getDocs(q);
       const bookedTimes = schedules.docs.map(doc => (doc.data().time));
+
+      //set available times base on booked times
       setAvailableTimes(professional.availableTimes.filter((item: string) => !bookedTimes.includes(item)));
     }
     catch {
@@ -183,7 +186,7 @@ function AppointmentBooking() {
                 />
                 {/* <div className="text-gray-500 line-through text-sm mb-1">$160.0</div> */}
                 <div className="text-red-500 text-lg font-bold mb-4">{professional.pricing}</div>
-                <Button className="w-full bg-emerald-600 text-white hover:bg-emerald-700">
+                <Button className="w-full bg-emerald-600 text-white hover:bg-emerald-700" onClick={handleCreateSchedule}>
                   Schedule
                 </Button>
               </CardContent>

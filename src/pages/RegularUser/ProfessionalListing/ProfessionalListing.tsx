@@ -91,6 +91,7 @@ function ProfessionalListing() {
     fetchAccounts();
   }, []);
 
+  // Get professionals by role
   const fetchAccounts = async () => {
     try {
       const accountsColRef = collection(FIREBASE_FIRESTORE, "account");
@@ -146,8 +147,8 @@ function ProfessionalListing() {
 
   const totalPages = Math.ceil(filteredProfessionals.length / ITEMS_PER_PAGE);
 
+  // Go to appointment booking page, set state for the target page
   const handleNavigate = (professional: any) => {
-    // Truyền tham số 'name' qua state
     navigate('/user/appointment-booking', {
       state: professional
     });

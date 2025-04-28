@@ -52,6 +52,7 @@ function Appointments() {
     }
   };
 
+  // set status options for filter dropdown
   const statusOptions = [
     { label: "All", value: "All" },
     ...Object.keys(Status)
@@ -62,7 +63,10 @@ function Appointments() {
       }))
   ];
 
+  // get status options base on current appointment status
   const getAvailableStatusOptions = (currentStatus: Status) => {
+    // TODO: when user chage appointment date, reverse status to Pending
+    // Only allowing changes for Pending and Confirmed date
     switch (currentStatus) {
       case Status.Pending:
         return [
@@ -116,11 +120,13 @@ function Appointments() {
     fetchAppointments();
   }, []);
 
+  // get appointments info
   const fetchAppointments = async () => {
     try {
       const appointmentsRef = collection(FIREBASE_FIRESTORE, "schedule");
 
-      const q = query(appointmentsRef, where(user.role === "professional" ? "profEmail" : "userEmail", "==", user.email));
+      const q = query(appointmentsRef, where(user.role === "professional" ?
+        "profEmail" : "userEmail", "==", user.email));
       const querySnapshot = await getDocs(q);
 
       const appointmentList = querySnapshot.docs.map(doc => (
@@ -129,6 +135,7 @@ function Appointments() {
       appointmentList.sort((a, b) => b.dateTime.localeCompare(a.dateTime));
       setAppointments(appointmentList);
 
+      // save appointment id with correspoding status in Record object
       if (user.role === "professional") {
         setSelectedStatuses(appointmentList.reduce((acc, appointment) => {
           acc[appointment.id] = appointment.status;
@@ -154,6 +161,7 @@ function Appointments() {
     setCurrentPage(1);
   };
 
+  //update appointment status
   const handleStatusChange = async (appointmentId: number, newStatus: Status) => {
     try {
       const appointmentRef = doc(FIREBASE_FIRESTORE, "schedule", String(appointmentId));
@@ -168,6 +176,7 @@ function Appointments() {
     }
   };
 
+  // create notification for user about appointment status change
   const createNotificationForUser = async (appointment: any, newStatus: Status) => {
     try {
       const id = crypto.randomUUID();
@@ -186,6 +195,7 @@ function Appointments() {
     }
   }
 
+  // convert status enum to string
   const formatStatus = (status: Status) => {
     switch (status) {
       case Status.NoShow:
@@ -195,6 +205,7 @@ function Appointments() {
     }
   }
 
+  // convert string to enum status
   const toStatusEnum = (value: string): Status => {
     const normalized = value.replace(/[\s-]/g, "") as keyof typeof Status;
     return Status[normalized];
@@ -289,6 +300,7 @@ function Appointments() {
                     {user.role === "professional" && <Select
                       value={formatStatus(selectedStatuses[appointment.id])}
                       onValueChange={(value) =>
+                        // set status of particular appointment based on id
                         setSelectedStatuses(prev => ({
                           ...prev,
                           [appointment.id]: toStatusEnum(value)

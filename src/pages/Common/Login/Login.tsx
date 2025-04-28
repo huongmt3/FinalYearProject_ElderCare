@@ -26,6 +26,7 @@ function Login() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
+  // Login function
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
@@ -39,6 +40,7 @@ function Login() {
       if (userDoc.exists()) {
         const userData = userDoc.data();
 
+        // Set user info to redux store
         dispatch(setUser({
           email: userData.email,
           role: userData.role,

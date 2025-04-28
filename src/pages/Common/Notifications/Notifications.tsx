@@ -39,8 +39,9 @@ function Notifications() {
 
   useEffect(() => {
     fetchNotifications();
-  });
+  }, []);
 
+  // get notifications based on current user
   const fetchNotifications = async () => {
     try {
       const notificationsRef = collection(FIREBASE_FIRESTORE, "notification");
