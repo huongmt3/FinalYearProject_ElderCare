@@ -1,11 +1,11 @@
-import { SetStateAction, useState } from 'react';
+import { useState } from 'react';
 import { Button } from '../../../components/ui/Button';
 import { Card, CardContent } from '../../../components/ui/card';
 import { useLocation } from 'react-router-dom';
 import DatePicker from 'react-datepicker';
 import "react-datepicker/dist/react-datepicker.css";
 import { FIREBASE_FIRESTORE } from '../../../utils/firebaseConfig';
-import { collection, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore';
+import { collection, doc, getDocs, query, setDoc, where } from 'firebase/firestore';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store/store';
 import { Status } from '../../../models/enums/status.enum';
@@ -71,16 +71,66 @@ function AppointmentBooking() {
         profEmail: professional.email,
         profFullName: professional.fullName,
         profAvatarUrl: professional.avatarUrl,
+        dateTime: parseTimeToDate(selectedTime, selectedDate),
         date: convertToDbDate(selectedDate),
         time: selectedTime,
         status: Status.Pending,
       });
       resetAvailableTimes(convertToDbDate(selectedDate));
       toast.success("Appointment Booked Successfully!");
+      createNotificationForUser();
+      createNotificationForProf();
     } catch {
       toast.error("Failed To Book An Appointment!");
     }
   };
+
+  const parseTimeToDate = (timeString: string, baseDate: Date) => {
+    const [timePart] = timeString.split('-').map(s => s.trim());
+    let [hours, minutes] = timePart.split(':').map(Number);
+    if (isNaN(minutes)) minutes = 0;
+    baseDate.setHours(hours);
+    baseDate.setMinutes(minutes);
+    baseDate.setSeconds(0);
+    baseDate.setMilliseconds(0);
+    return baseDate.toISOString();
+  }
+
+  const createNotificationForUser = async () => {
+    try {
+      const id = crypto.randomUUID();
+      const notificationRef = doc(FIREBASE_FIRESTORE, `notification/${id}`);
+      await setDoc(notificationRef, {
+        id: id,
+        sentTo: user.email,
+        personRelated: professional.email,
+        title: "New Appointment",
+        content: `You have successfully booked an appointment with ${professional.fullName} on ${convertToDbDate(selectedDate!)} at ${selectedTime}.`,
+        createdAt: new Date().toISOString(),
+      });
+    }
+    catch {
+      console.log("Failed to create notification: New-Appointment for user.");
+    }
+  }
+
+  const createNotificationForProf = async () => {
+    try {
+      const id = crypto.randomUUID();
+      const notificationRef = doc(FIREBASE_FIRESTORE, `notification/${id}`);
+      await setDoc(notificationRef, {
+        id: id,
+        sentTo: professional.email,
+        personRelated: user.email,
+        title: "New Appointment",
+        content: `You have a new appointment with ${user.fullName} on ${convertToDbDate(selectedDate!)} at ${selectedTime}.`,
+        createdAt: new Date().toISOString(),
+      });
+    }
+    catch {
+      console.log("Failed to create notification: New-Appointment for professional.");
+    }
+  }
 
   const resetAvailableTimes = async (dbDate: string) => {
     try {

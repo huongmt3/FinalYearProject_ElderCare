@@ -14,11 +14,12 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/Table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/Select";
 import { ClipLoader } from 'react-spinners';
-import { collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
+import { collection, doc, getDocs, query, setDoc, updateDoc, where } from "firebase/firestore";
 import { FIREBASE_FIRESTORE } from "../../../utils/firebaseConfig";
 import { useSelector } from "react-redux";
 import { AppState } from "../../../store/store";
 import { Status } from "../../../models/enums/status.enum";
+import toast from "react-hot-toast";
 
 function Appointments() {
   const [searchQuery, setSearchQuery] = useState("");
@@ -125,7 +126,7 @@ function Appointments() {
       const appointmentList = querySnapshot.docs.map(doc => (
         doc.data()
       ));
-
+      appointmentList.sort((a, b) => b.dateTime.localeCompare(a.dateTime));
       setAppointments(appointmentList);
 
       if (user.role === "professional") {
@@ -154,21 +155,36 @@ function Appointments() {
   };
 
   const handleStatusChange = async (appointmentId: number, newStatus: Status) => {
-    console.log(newStatus);
-
-    setAppointments((prevAppointments) =>
-      prevAppointments.map((appointment) =>
-        appointment.id === appointmentId
-          ? { ...appointment, status: Status[newStatus] }
-          : appointment
-      )
-    );
-    const appointmentRef = doc(FIREBASE_FIRESTORE, "schedule", String(appointmentId)); // Cập nhật document theo ID
-    await updateDoc(appointmentRef, {
-      status: newStatus,
-    });
-    fetchAppointments();
+    try {
+      const appointmentRef = doc(FIREBASE_FIRESTORE, "schedule", String(appointmentId));
+      await updateDoc(appointmentRef, {
+        status: newStatus,
+      });
+      fetchAppointments();
+      toast.success("Appointment Status Updated Successfully!");
+    }
+    catch {
+      toast.error("Failed To Update Appointment Status!");
+    }
   };
+
+  const createNotificationForUser = async (appointment: any, newStatus: Status) => {
+    try {
+      const id = crypto.randomUUID();
+      const notificationRef = doc(FIREBASE_FIRESTORE, `notification/${id}`);
+      await setDoc(notificationRef, {
+        id: id,
+        sentTo: appointment.userEmail,
+        personRelated: user.email,
+        title: "Appointment Updated",
+        content: `${appointment.userFullName} has updated status of the appointment on ${appointment.date} at ${appointment.time} to ${formatStatus(newStatus)}.`,
+        createdAt: new Date().toISOString(),
+      });
+    }
+    catch {
+      console.log("Failed to create notification: New-Appointment for user.");
+    }
+  }
 
   const formatStatus = (status: Status) => {
     switch (status) {
@@ -295,7 +311,11 @@ function Appointments() {
                   </TableCell>
                   {user.role === "professional" && <TableCell className="text-right">
                     <Button className="bg-[#90E0C9] hover:bg-[#7DCBB4] text-black" variant="secondary"
-                      onClick={() => handleStatusChange(appointment.id, selectedStatuses[appointment.id])}>
+                      onClick={() => {
+                        handleStatusChange(appointment.id, selectedStatuses[appointment.id]);
+                        createNotificationForUser(appointment, selectedStatuses[appointment.id]);
+                      }
+                      }>
                       Update
                     </Button>
                   </TableCell>}

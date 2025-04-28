@@ -8,6 +8,7 @@ export interface Schedule {
     profEmail: string,
     profFullName: string,
     profAvatarUrl: string,
+    dateTime: string,
     date: string,
     time: string,
     status: Status,
