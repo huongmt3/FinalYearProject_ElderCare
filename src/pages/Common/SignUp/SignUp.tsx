@@ -118,6 +118,7 @@ function Signup() {
         description: "",
         pricing: "",
         availableTimes: [],
+        avatarUrl: "",
       }));
 
       toast.success("Welcome! Your account has been created successfully. Redirecting to homepage...", {

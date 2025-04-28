@@ -7,6 +7,7 @@ interface UserState {
     description: string;
     pricing: string;
     availableTimes: string[];
+    avatarUrl: string;
 }
 
 const initialState: UserState = {
@@ -16,6 +17,7 @@ const initialState: UserState = {
     description: "",
     pricing: "",
     availableTimes: [],
+    avatarUrl: "",
 };
 
 const userSlice = createSlice({
@@ -29,6 +31,7 @@ const userSlice = createSlice({
             state.description = action.payload.description;
             state.pricing = action.payload.pricing;
             state.availableTimes = action.payload.availableTimes;
+            state.avatarUrl = action.payload.avatarUrl;
         },
         clearUser(state) {
             state.email = "";
@@ -37,6 +40,7 @@ const userSlice = createSlice({
             state.description = "";
             state.pricing = "";
             state.availableTimes = [];
+            state.avatarUrl = "";
         },
         updateUser(state, action: PayloadAction<Partial<UserState>>) {
             if (action.payload.email) state.email = action.payload.email;
@@ -45,6 +49,7 @@ const userSlice = createSlice({
             if (action.payload.description) state.description = action.payload.description;
             if (action.payload.pricing) state.pricing = action.payload.pricing;
             if (action.payload.availableTimes) state.availableTimes = action.payload.availableTimes;
+            if (action.payload.avatarUrl) state.avatarUrl = action.payload.avatarUrl;
         },
     },
 });

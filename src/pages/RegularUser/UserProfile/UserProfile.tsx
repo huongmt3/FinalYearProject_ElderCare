@@ -45,7 +45,7 @@ function UserProfile() {
       setIsEditMode(false);
     }
     catch (error: any) {
-      toast.success(error.message);
+      toast.success("Fail To Update Profile!");
     }
   };
 
@@ -71,7 +71,7 @@ function UserProfile() {
 
           <Bell className="w-5 h-5 text-gray-500" />
           <Avatar>
-            <AvatarImage src="https://github.com/shadcn.png" alt="Profile" />
+            <AvatarImage src={user.avatarUrl} alt="Profile" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
         </div>
@@ -109,7 +109,7 @@ function UserProfile() {
             {/* Profile Header */}
             <div className="flex items-center gap-6 mb-8">
               <Avatar className="w-20 h-20">
-                <AvatarImage src="https://github.com/shadcn.png" alt="Alexa Rawles" />
+                <AvatarImage src={user.avatarUrl} alt="Alexa Rawles" />
                 <AvatarFallback>AR</AvatarFallback>
               </Avatar>
               <div className="flex-1">

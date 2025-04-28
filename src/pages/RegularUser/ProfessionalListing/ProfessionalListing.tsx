@@ -90,13 +90,10 @@ function ProfessionalListing() {
   useEffect(() => {
     async function fetchAccounts() {
       try {
-        // Truy cập vào collection "account"
         const accountsColRef = collection(FIREBASE_FIRESTORE, "account");
         const q = query(accountsColRef, where("role", "==", "professional"));
-        // Lấy dữ liệu từ Firestore
         const querySnapshot = await getDocs(q);
 
-        // Lưu dữ liệu vào state
         const accountList = querySnapshot.docs.map(doc => (
           doc.data()
         ));
@@ -108,7 +105,6 @@ function ProfessionalListing() {
       }
     }
 
-    // Gọi hàm fetchAccounts khi component mount
     fetchAccounts();
   }, []);
 

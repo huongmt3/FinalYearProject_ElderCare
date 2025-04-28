@@ -100,14 +100,14 @@ function Navbar() {
             >
               Professional Listing
             </NavLink>}
-            <NavLink
+            {/* <NavLink
               to={ROUTE_PATH.APPOINTMENT_BOOKING}
               className={({ isActive }) =>
                 isActive ? "text-gray-900 border-b-2 border-gray-900 pb-3 font-medium" : "text-gray-600 hover:text-gray-900"
               }
             >
               Booking
-            </NavLink>
+            </NavLink> */}
           </nav>
         </div>
 

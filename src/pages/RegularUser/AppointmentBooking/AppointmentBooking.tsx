@@ -1,19 +1,110 @@
-import { useState } from 'react';
+import { SetStateAction, useState } from 'react';
 import { Button } from '../../../components/ui/Button';
 import { Card, CardContent } from '../../../components/ui/card';
+import { useLocation } from 'react-router-dom';
+import DatePicker from 'react-datepicker';
+import "react-datepicker/dist/react-datepicker.css";
+import { FIREBASE_FIRESTORE } from '../../../utils/firebaseConfig';
+import { collection, doc, getDoc, getDocs, query, setDoc, where } from 'firebase/firestore';
+import { useSelector } from 'react-redux';
+import { AppState } from '../../../store/store';
+import { Status } from '../../../models/enums/status.enum';
+import toast from 'react-hot-toast';
 
 function AppointmentBooking() {
+  const location = useLocation();
+
+  const [professional, setProfessional] = useState(location.state || {});
+  const [availableTimes, setAvailableTimes] = useState(professional.availableTimes);
+  const user = useSelector((state: AppState) => state.user);
+
   const [selectedTime, setSelectedTime] = useState<string | null>(null);
-  const availableTimes = [
-    "8:15 - 9:00",
-    "9:15 - 10:00",
-    "10:15 - 11:00",
-    "11:15 - 12:00",
-    "14:15 - 15:00",
-    "15:15 - 16:00",
-    "16:15 - 17:00",
-    "17:15 - 18:00",
-  ];
+  // const availableTimes = [
+  //   "8:15 - 9:00",
+  //   "9:15 - 10:00",
+  //   "10:15 - 11:00",
+  //   "11:15 - 12:00",
+  //   "14:15 - 15:00",
+  //   "15:15 - 16:00",
+  //   "16:15 - 17:00",
+  //   "17:15 - 18:00",
+  // ];
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+
+  const handleDateChange = (date: Date | null) => {
+    setSelectedDate(date);
+    if (date) {
+      resetAvailableTimes(convertToDbDate(date));
+    }
+  };
+
+  const formattedDate = selectedDate
+    ? selectedDate.toLocaleDateString('en-GB', {
+      weekday: 'long',
+      day: 'numeric',
+      month: 'numeric',
+      year: 'numeric'
+    })
+    : '';
+
+  const convertToDbDate = (date: Date) => {
+    return date.toLocaleDateString('en-US', {
+      month: 'long',
+      day: 'numeric',
+      year: 'numeric'
+    });
+  };
+
+  const handleCreateSchedule = async () => {
+    try {
+      const id = crypto.randomUUID();
+      const scheduleRef = doc(FIREBASE_FIRESTORE, `schedule/${id}`);
+      if (!selectedDate || !selectedTime || selectedTime === '') {
+        toast.error("Please fill in date and time!");
+        return;
+      }
+      await setDoc(scheduleRef, {
+        id: id,
+        userEmail: user.email,
+        userFullName: user.fullName,
+        profEmail: professional.email,
+        profFullName: professional.fullName,
+        date: convertToDbDate(selectedDate),
+        time: selectedTime,
+        status: Status.Pending,
+      });
+      resetAvailableTimes(convertToDbDate(selectedDate));
+      toast.success("Appointment Booked Successfully!");
+      // const userDocRef = doc(FIREBASE_FIRESTORE, "account", professional.email);
+      // const userDoc = await getDoc(userDocRef);
+      // setProfessional(userDoc.data());
+    } catch {
+      toast.error("Failed To Book An Appointment!");
+    }
+  };
+
+  const resetAvailableTimes = async (dbDate: string) => {
+    try {
+      console.log("reset");
+
+      const schedulesRef = collection(FIREBASE_FIRESTORE, "schedule");
+      let queryConditions = [
+        where("profEmail", "==", professional.email),
+        where("userEmail", "==", user.email),
+      ];
+
+      queryConditions.push(
+        where("date", "==", dbDate)
+      );
+      const q = query(schedulesRef, ...queryConditions);
+      const schedules = await getDocs(q);
+      const bookedTimes = schedules.docs.map(doc => (doc.data().time));
+      setAvailableTimes(professional.availableTimes.filter((item: string) => !bookedTimes.includes(item)));
+    }
+    catch {
+      console.log("Failed to get available times");
+    }
+  }
 
   return (
     <div className="min-h-screen bg-white p-6 md:p-10">
@@ -21,12 +112,12 @@ function AppointmentBooking() {
         {/* Header Section */}
         <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8">
           <div>
-            <div className="bg-black text-white text-xs font-medium px-2 py-1 rounded-md inline-block mb-2">
+            {/* <div className="bg-black text-white text-xs font-medium px-2 py-1 rounded-md inline-block mb-2">
               Mental Health & Well-Being
-            </div>
-            <div className="text-gray-500 text-sm mb-1">$125/hour</div>
+            </div> */}
+            <div className="text-gray-500 text-sm mb-1">{professional.pricing}/hour</div>
             <h1 className="text-2xl md:text-3xl font-bold text-gray-900 mb-2">
-              The Ultimate Guide To The Best WordPress LMS Plugin
+              {professional.fullName}
             </h1>
             <div className="flex items-center">
               <span className="text-yellow-500 text-lg">★★★★☆</span>
@@ -37,12 +128,12 @@ function AppointmentBooking() {
             <Card className="border rounded-lg shadow-sm">
               <CardContent className="p-4">
                 <img
-                  src="https://plus.unsplash.com/premium_photo-1658506671316-0b293df7c72b?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+                  src={professional.avatarUrl}
                   alt="Professional Service"
                   className="w-80 h-auto rounded-md mb-4"
                 />
-                <div className="text-gray-500 line-through text-sm mb-1">$160.0</div>
-                <div className="text-red-500 text-lg font-bold mb-4">$125.0</div>
+                {/* <div className="text-gray-500 line-through text-sm mb-1">$160.0</div> */}
+                <div className="text-red-500 text-lg font-bold mb-4">{professional.pricing}</div>
                 <Button className="w-full bg-emerald-600 text-white hover:bg-emerald-700">
                   Schedule
                 </Button>
@@ -57,20 +148,28 @@ function AppointmentBooking() {
           <p className="text-sm text-gray-500 mb-4">
             Your email address will not be published. Required fields are marked *
           </p>
-          <div className="mb-4">
-            <Button variant="outline" className="text-sm">
+          <div className="mb-4 flex items-center">
+            {/* <Button variant="outline" className="text-sm">
               Select Date
             </Button>
-            <span className="ml-4 text-sm text-gray-700">Friday, 21/03/2025</span>
+            <span className="ml-4 text-sm text-gray-700">Friday, 21/03/2025</span> */}
+            <DatePicker
+              selected={selectedDate}
+              onChange={handleDateChange}
+              dateFormat="dd/MM/yyyy"
+              className="text-sm text-teal-600 border-teal-600 border-2 rounded-md px-4 py-2 cursor-pointer hover:bg-teal-50 focus:outline-none"
+              customInput={<button className="w-full text-sm text-teal-600 border-teal-600 border-2 rounded-md px-4 py-2 hover:bg-teal-50 focus:outline-none">Select Date</button>}
+            />
+            <span className="ml-4 text-sm text-gray-700">{formattedDate}</span>
           </div>
           <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4">
-            {availableTimes.map((time, index) => (
+            {availableTimes && availableTimes.map((time: string) => (
               <Button
-                key={index}
+                key={time}
                 variant={selectedTime === time ? "default" : "outline"}
                 className={`text-sm ${selectedTime === time
-                    ? "bg-emerald-600 text-white"
-                    : "text-gray-700 border-gray-300 hover:bg-gray-100"
+                  ? "bg-emerald-600 text-white"
+                  : "text-gray-700 border-gray-300 hover:bg-gray-100"
                   }`}
                 onClick={() => setSelectedTime(time)}
               >
@@ -79,7 +178,7 @@ function AppointmentBooking() {
             ))}
           </div>
           <p className="text-sm text-gray-500 mb-4">Choose the suitable hour ($0)</p>
-          <Button className="bg-emerald-600 text-white hover:bg-emerald-700">
+          <Button className="bg-emerald-600 text-white hover:bg-emerald-700" onClick={handleCreateSchedule}>
             Schedule
           </Button>
         </div>
@@ -90,19 +189,7 @@ function AppointmentBooking() {
             <CardContent className="p-4 bg-gray-100">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Overview</h2>
               <p className="text-sm text-gray-700">
-                LearnPress is a comprehensive WordPress LMS Plugin for WordPress. This is one of
-                the best WordPress LMS Plugins which can be used to easily create & sell courses
-                online. You can create a course curriculum with lessons & quizzes included which
-                is managed with an easy-to-use interface for users. Having this WordPress LMS
-                Plugin, now you have a chance to quickly and easily create education, online
-                school, online-course websites with no coding knowledge required.
-              </p>
-              <p className="text-sm text-gray-700 mt-4">
-                LearnPress is free and always will be, but it is still a premium high-quality
-                WordPress Plugin that definitely helps you with making money from your WordPress
-                Based LMS. Just try and see how amazing it is. LearnPress WordPress Online Course
-                plugin is lightweight and super powerful with lots of Add-Ons to empower its core
-                system.
+                {professional.description}
               </p>
             </CardContent>
           </Card>

@@ -46,6 +46,7 @@ function Login() {
           description: userData.description,
           pricing: userData.pricing,
           availableTimes: userData.availableTimes,
+          avatarUrl: userData.avatarUrl,
         }));
         toast.success("Logged In Successfully!");
         navigate(ROUTE_PATH.HOME);
