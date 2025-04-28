@@ -68,7 +68,7 @@ function Navbar() {
             >
               Notifications
             </NavLink>}
-            {role === "professional" && <NavLink
+            {role !== "" && <NavLink
               to={ROUTE_PATH.APPOINTMENTS}
               className={({ isActive }) =>
                 isActive ? "text-gray-900 border-b-2 border-gray-900 pb-3 font-medium" : "text-gray-600 hover:text-gray-900"

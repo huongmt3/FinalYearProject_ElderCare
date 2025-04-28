@@ -88,25 +88,25 @@ function ProfessionalListing() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    async function fetchAccounts() {
-      try {
-        const accountsColRef = collection(FIREBASE_FIRESTORE, "account");
-        const q = query(accountsColRef, where("role", "==", "professional"));
-        const querySnapshot = await getDocs(q);
-
-        const accountList = querySnapshot.docs.map(doc => (
-          doc.data()
-        ));
-        setProfessionals(accountList);
-      } catch (error) {
-        console.error("Error getting accounts: ", error);
-      } finally {
-        setLoading(false);
-      }
-    }
-
     fetchAccounts();
   }, []);
+
+  const fetchAccounts = async () => {
+    try {
+      const accountsColRef = collection(FIREBASE_FIRESTORE, "account");
+      const q = query(accountsColRef, where("role", "==", "professional"));
+      const querySnapshot = await getDocs(q);
+
+      const accountList = querySnapshot.docs.map(doc => (
+        doc.data()
+      ));
+      setProfessionals(accountList);
+    } catch (error) {
+      console.error("Error getting accounts: ", error);
+    } finally {
+      setLoading(false);
+    }
+  }
 
   // Filter professionals based on search term
   const filteredProfessionals = professionals.filter((professional: { fullName: string; }) =>

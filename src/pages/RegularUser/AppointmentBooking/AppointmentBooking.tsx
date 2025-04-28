@@ -67,17 +67,16 @@ function AppointmentBooking() {
         id: id,
         userEmail: user.email,
         userFullName: user.fullName,
+        userAvatarUrl: user.avatarUrl,
         profEmail: professional.email,
         profFullName: professional.fullName,
+        profAvatarUrl: professional.avatarUrl,
         date: convertToDbDate(selectedDate),
         time: selectedTime,
         status: Status.Pending,
       });
       resetAvailableTimes(convertToDbDate(selectedDate));
       toast.success("Appointment Booked Successfully!");
-      // const userDocRef = doc(FIREBASE_FIRESTORE, "account", professional.email);
-      // const userDoc = await getDoc(userDocRef);
-      // setProfessional(userDoc.data());
     } catch {
       toast.error("Failed To Book An Appointment!");
     }

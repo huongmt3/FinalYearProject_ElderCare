@@ -1,244 +1,349 @@
-import React, { useState } from "react";
-import { Search, ChevronDown, ChevronRight, ChevronLeft } from "lucide-react";
+import { useState, useEffect } from "react";
+import { Search } from "lucide-react";
 import { Input } from '../../../components/ui/Input';
-import { Avatar, AvatarFallback, AvatarImage }
- from '../../../components/ui/Avatar';
+import { Avatar, AvatarFallback, AvatarImage } from '../../../components/ui/Avatar';
 import { Button } from '../../../components/ui/Button';
-import { Badge } from '../../../components/ui/Badge';
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
 } from '../../../components/ui/Pagination';
-import { Table, TableBody, TableCell, TableHead,
-  TableHeader, TableRow, } from '../../../components/ui/Table';
-import { Select, SelectContent, SelectItem,
-  SelectTrigger, SelectValue } from "../../../components/ui/Select";
-
-interface Appointment {
-  id: number;
-  user: string;
-  userImage: string;
-  time: string;
-  date: string;
-  status: "Completed" | "Confirmed" | "Pending" | "No-Show";
-}
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/Table';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/Select";
+import { ClipLoader } from 'react-spinners';
+import { collection, getDocs, query, where } from "firebase/firestore";
+import { FIREBASE_FIRESTORE } from "../../../utils/firebaseConfig";
+import { useSelector } from "react-redux";
+import { AppState } from "../../../store/store";
+import { Status } from "../../../models/enums/status.enum";
 
 function Appointments() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<string | undefined>(undefined);
+  const [statusFilter, setStatusFilter] = useState<keyof typeof Status | "All" | undefined>(undefined);
   const [rowsPerPage, setRowsPerPage] = useState("10");
-  
-  const appointments: Appointment[] = [
-    {
-      id: 1,
-      user: "Ma Thu Huong",
-      userImage: "",
-      time: "11:15 - 12:00",
-      date: "July 1, 2024",
-      status: "Completed",
-    },
-    {
-      id: 2,
-      user: "Ma Thu Huong",
-      userImage: "",
-      time: "11:15 - 12:00",
-      date: "July 25, 2024",
-      status: "Confirmed",
-    },
-    {
-      id: 3,
-      user: "Ma Thu Huong",
-      userImage: "",
-      time: "11:15 - 12:00",
-      date: "August 1, 2024",
-      status: "Pending",
-    },
-    {
-      id: 4,
-      user: "Ma Thu Huong",
-      userImage: "",
-      time: "11:15 - 12:00",
-      date: "August 22, 2024",
-      status: "No-Show",
-    },
+  const [currentPage, setCurrentPage] = useState(1);
+  const [isLoading, setIsLoading] = useState(true);
+  const [appointments, setAppointments] = useState<any[]>([]);
+  const [selectedStatuses, setSelectedStatuses] = useState<Record<number, Status>>({} as Record<number, Status>);
+
+  const user = useSelector((state: AppState) => state.user);
+
+  const getStatusColor = (status: Status) => {
+    switch (status) {
+      case Status.Completed: return "text-green-600";
+      case Status.Confirmed: return "text-blue-600";
+      case Status.Pending: return "text-orange-500";
+      case Status.NoShow: return "text-red-600";
+      default: return "";
+    }
+  };
+
+  const getStatusDot = (status: Status) => {
+    switch (status) {
+      case Status.Completed: return "bg-green-600";
+      case Status.Confirmed: return "bg-blue-600";
+      case Status.Pending: return "bg-orange-500";
+      case Status.NoShow: return "bg-red-600";
+      default: return "";
+    }
+  };
+
+  const statusOptions = [
+    { label: "All", value: "All" },
+    ...Object.keys(Status)
+      .filter((key) => isNaN(Number(key)))
+      .map((key) => ({
+        label: key === "NoShow" ? "No-Show" : key,
+        value: key,
+      }))
   ];
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case "Completed":
-        return "text-green-600";
-      case "Confirmed":
-        return "text-blue-600";
-      case "Pending":
-        return "text-orange-500";
-      case "No-Show":
-        return "text-red-600";
+  const getAvailableStatusOptions = (currentStatus: Status) => {
+    switch (currentStatus) {
+      case Status.Pending:
+        return [
+          { label: "Pending", value: "Pending" },
+          { label: "Confirmed", value: "Confirmed" },
+        ];
+      case Status.Confirmed:
+        return [
+          { label: "Confirmed", value: "Confirmed" },
+          { label: "Completed", value: "Completed" },
+          { label: "No-Show", value: "No-Show" },
+        ];
+      case Status.Completed:
+        return [
+          { label: "Completed", value: "Completed" },
+          { label: "No-Show", value: "No-Show" },
+        ];
+      case Status.NoShow:
+        return [
+          { label: "No-Show", value: "No-Show" },
+          { label: "Completed", value: "Completed" },
+        ];
       default:
-        return "";
+        return [];
     }
-  };
+  }
 
-  const getStatusDot = (status: string) => {
-    switch (status) {
-      case "Completed":
-        return "bg-green-600";
-      case "Confirmed":
-        return "bg-blue-600";
-      case "Pending":
-        return "bg-orange-500";
-      case "No-Show":
-        return "bg-red-600";
-      default:
-        return "";
-    }
-  };
-
-  // Filter appointments based on search query and status filter
+  // Filter appointments
   const filteredAppointments = appointments.filter((appointment) => {
-    const matchesSearch = appointment.user.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesStatus = statusFilter ? appointment.status === statusFilter : true;
+    const matchesSearch = user.role === "professional"
+      ? appointment.userFullName.toLowerCase().includes(searchQuery.toLowerCase())
+      : appointment.profFullName.toLowerCase().includes(searchQuery.toLowerCase());
+    const normalizedStatusFilter = statusFilter?.replace(/[\s-]/g, "");
+    const matchesStatus = statusFilter && statusFilter !== "All"
+      ? Status[normalizedStatusFilter as keyof typeof Status] === appointment.status
+      : true;
     return matchesSearch && matchesStatus;
   });
 
+  // Pagination calculation
+  const totalRows = filteredAppointments.length;
+  const pageSize = parseInt(rowsPerPage, 10);
+  const totalPages = Math.ceil(totalRows / pageSize);
+
+  const currentAppointments = filteredAppointments.slice(
+    (currentPage - 1) * pageSize,
+    currentPage * pageSize
+  );
+
+  useEffect(() => {
+    fetchAppointments();
+  }, []);
+
+  const fetchAppointments = async () => {
+    try {
+      const appointmentsRef = collection(FIREBASE_FIRESTORE, "schedule");
+
+      const q = query(appointmentsRef, where(user.role === "professional" ? "profEmail" : "userEmail", "==", user.email));
+      const querySnapshot = await getDocs(q);
+
+      const appointmentList = querySnapshot.docs.map(doc => (
+        doc.data()
+      ));
+
+      setAppointments(appointmentList);
+      setSelectedStatuses(appointmentList.reduce((acc, appointment) => {
+        acc[appointment.id] = appointment.status;
+        return acc;
+      }, {} as Record<number, Status>));
+    } catch (error) {
+      console.error("Error getting appointments: ", error);
+    } finally {
+      setIsLoading(false);
+    }
+  }
+
+  const handlePageChange = (page: number) => {
+    if (page >= 1 && page <= totalPages) {
+      setIsLoading(true);
+      setCurrentPage(page);
+    }
+  };
+
+  const handleRowsPerPageChange = (value: string) => {
+    setRowsPerPage(value);
+    setCurrentPage(1);
+  };
+
+  const handleStatusChange = (appointmentId: number, newStatus: string) => {
+    const normalizedStatus = newStatus.replace(/[\s-]/g, "") as keyof typeof Status;
+    setAppointments((prevAppointments) =>
+      prevAppointments.map((appointment) =>
+        appointment.id === appointmentId
+          ? { ...appointment, status: Status[normalizedStatus] }
+          : appointment
+      )
+    );
+  };
+
+  const statusEnumToString = (status: Status) => {
+    return Status[status] as keyof typeof Status;
+  };
+
+  function formatStatus(status: Status): string {
+    switch (status) {
+      case Status.NoShow:
+        return "No-Show";
+      default:
+        return Status[status];
+    }
+  }
+
   return (
     <div className="container mx-auto px-4 py-8 max-w-6xl">
-      <div className="flex flex-col space-y-6">
-        {/* Header */}
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-2xl font-bold">Appointments</h1>
-            <p className="text-gray-500">View and manage your appointments</p>
-          </div>
-          <div className="flex items-center space-x-2">
-            <div className="relative">
-              <Input
-                className="pl-10 w-64"
-                placeholder="Search for User"
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-              />
-              <Search className="h-4 w-4 absolute left-3 top-3 text-gray-400" />
-            </div>
-            <Select value={statusFilter} onValueChange={setStatusFilter}>
-              <SelectTrigger className="w-32">
-                <SelectValue placeholder="Status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="All">All</SelectItem>
-                <SelectItem value="Completed">Completed</SelectItem>
-                <SelectItem value="Confirmed">Confirmed</SelectItem>
-                <SelectItem value="Pending">Pending</SelectItem>
-                <SelectItem value="No-Show">No-Show</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
+      <div className="flex justify-between items-center mb-6">
+        <div>
+          <h1 className="text-2xl font-bold">Appointments</h1>
+          <p className="text-gray-500">View and manage your appointments</p>
         </div>
+        <div className="flex items-center space-x-2">
+          <div className="relative">
+            <Input
+              className="pl-10 w-64"
+              placeholder="Search for User"
+              value={searchQuery}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setCurrentPage(1); // khi search reset về trang 1
+              }}
+            />
+            <Search className="h-4 w-4 absolute left-3 top-3 text-gray-400" />
+          </div>
+          <Select value={statusFilter} onValueChange={(value) => { setStatusFilter(value as "All" | keyof typeof Status); setCurrentPage(1); }}>
+            <SelectTrigger className="w-32">
+              <SelectValue placeholder="Status" />
+            </SelectTrigger>
+            <SelectContent className="bg-white border rounded-md shadow-md">
+              {statusOptions.map((option) => (
+                <SelectItem key={option.value} value={option.value}>
+                  {option.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+      </div>
 
-        {/* Table */}
-        <div className="bg-white rounded-md border shadow-sm">
+      <div className="bg-white rounded-md border shadow-sm">
+        {isLoading ? (
+          <div className="flex justify-center items-center py-20">
+            <ClipLoader size={40} color="#4F46E5" />
+          </div>
+        ) : (
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>User</TableHead>
+                {user.role !== "user" && <TableHead>User</TableHead>}
+                {user.role !== "professional" && <TableHead>Professional</TableHead>}
                 <TableHead>Time</TableHead>
                 <TableHead>Date</TableHead>
                 <TableHead>Status</TableHead>
-                <TableHead className="text-right">Status</TableHead>
+                {user.role === "professional" && <TableHead className="text-right">Actions</TableHead>}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredAppointments.map((appointment) => (
+              {currentAppointments.map((appointment) => (
                 <TableRow key={appointment.id}>
-                  <TableCell className="flex items-center space-x-3">
-                    <Avatar>
-                      <AvatarImage src={appointment.userImage} alt={appointment.user} />
-                      <AvatarFallback className="bg-gray-200">
-                        {appointment.user.charAt(0)}
-                      </AvatarFallback>
-                    </Avatar>
-                    <span>{appointment.user}</span>
-                  </TableCell>
+                  {user.role !== "user" && <TableCell>
+                    <div className="flex items-center space-x-3">
+                      <Avatar>
+                        <AvatarImage src={appointment.userAvatarUrl} alt={appointment.userFullName} />
+                        <AvatarFallback className="bg-gray-200">
+                          {appointment.userFullName.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span>{appointment.userFullName}</span>
+                    </div>
+                  </TableCell>}
+                  {user.role !== "professional" && <TableCell>
+                    <div className="flex items-center space-x-3">
+                      <Avatar>
+                        <AvatarImage src={appointment.profAvatarUrl} alt={appointment.profFullName} />
+                        <AvatarFallback className="bg-gray-200">
+                          {appointment.profFullName.charAt(0)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span>{appointment.profFullName}</span>
+                    </div>
+                  </TableCell>}
                   <TableCell>{appointment.time}</TableCell>
                   <TableCell>{appointment.date}</TableCell>
                   <TableCell>
-                    <div className="flex items-center space-x-2">
+                    {user.role !== "professional" && <div className="flex items-center space-x-2">
                       <div className={`w-2 h-2 rounded-full ${getStatusDot(appointment.status)}`}></div>
                       <span className={getStatusColor(appointment.status)}>
-                        {appointment.status}
+                        {formatStatus(appointment.status)}
                       </span>
-                    </div>
+                    </div>}
+                    {user.role === "professional" && <Select
+                      value={selectedStatuses[appointment.id] !== undefined ? statusEnumToString(selectedStatuses[appointment.id]) : ""}
+                      onValueChange={(value) =>
+                        setSelectedStatuses(prev => ({
+                          ...prev,
+                          [appointment.id]: Status[value as keyof typeof Status]
+                        }))
+                      }
+                    >
+                      <SelectTrigger className="w-32">
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent className="bg-white border rounded-md shadow-md">
+                        {getAvailableStatusOptions(appointment.status).map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>}
                   </TableCell>
-                  <TableCell className="text-right">
-                    <Button className="bg-[#90E0C9] hover:bg-[#7DCBB4] text-black" variant="secondary">
-                      Change
+                  {user.role === "professional" && <TableCell className="text-right">
+                    <Button className="bg-[#90E0C9] hover:bg-[#7DCBB4] text-black" variant="secondary"
+                      onClick={(value) => handleStatusChange(appointment.id, value as unknown as keyof typeof Status)}>
+                      Update
                     </Button>
-                  </TableCell>
+                  </TableCell>}
                 </TableRow>
               ))}
+              {currentAppointments.length === 0 && (
+                <TableRow>
+                  <TableCell colSpan={5} className="text-center py-8 text-gray-500">
+                    No appointments found.
+                  </TableCell>
+                </TableRow>
+              )}
             </TableBody>
           </Table>
+        )}
+      </div>
+
+      <div className="flex justify-between items-center pt-4">
+        <div className="flex items-center gap-2">
+          <span className="text-sm text-gray-500">Show</span>
+          <Select value={rowsPerPage} onValueChange={handleRowsPerPageChange}>
+            <SelectTrigger className="w-16 h-8">
+              <SelectValue placeholder="10" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="5">5</SelectItem>
+              <SelectItem value="10">10</SelectItem>
+              <SelectItem value="20">20</SelectItem>
+              <SelectItem value="50">50</SelectItem>
+            </SelectContent>
+          </Select>
+          <span className="text-sm text-gray-500">Rows</span>
         </div>
 
-        {/* Pagination */}
-        <div className="flex justify-between items-center pt-2">
-          <div className="flex items-center gap-2">
-            <span className="text-sm text-gray-500">Show</span>
-            <Select value={rowsPerPage} onValueChange={setRowsPerPage}>
-              <SelectTrigger className="w-16 h-8">
-                <SelectValue placeholder="10" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="5">5</SelectItem>
-                <SelectItem value="10">10</SelectItem>
-                <SelectItem value="20">20</SelectItem>
-                <SelectItem value="50">50</SelectItem>
-              </SelectContent>
-            </Select>
-            <span className="text-sm text-gray-500">Row</span>
-          </div>
+        <Pagination>
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious href="#" onClick={() => handlePageChange(currentPage - 1)} />
+            </PaginationItem>
 
-          <Pagination>
-            <PaginationContent>
-              <PaginationItem>
-                <PaginationPrevious href="#" />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink href="#" isActive>
-                  1
+            {Array.from({ length: totalPages }, (_, i) => (
+              <PaginationItem key={i}>
+                <PaginationLink
+                  href="#"
+                  isActive={currentPage === i + 1}
+                  onClick={() => handlePageChange(i + 1)}
+                >
+                  {i + 1}
                 </PaginationLink>
               </PaginationItem>
-              <PaginationItem>
-                <PaginationLink href="#">2</PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink href="#">3</PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink href="#">4</PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink href="#">5</PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationEllipsis />
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationLink href="#">10</PaginationLink>
-              </PaginationItem>
-              <PaginationItem>
-                <PaginationNext href="#" />
-              </PaginationItem>
-            </PaginationContent>
-          </Pagination>
-        </div>
+            ))}
+
+            <PaginationItem>
+              <PaginationNext href="#" onClick={() => handlePageChange(currentPage + 1)} />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
       </div>
     </div>
   );
-};
+}
 
 export default Appointments;

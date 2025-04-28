@@ -54,7 +54,7 @@ function Login() {
         toast.error("User data not found in Firestore!");
       }
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error("Failed to log in!");
     } finally {
       setLoading(false);
     }
