@@ -14,7 +14,7 @@ import {
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../../../components/ui/Table';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/Select";
 import { ClipLoader } from 'react-spinners';
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
 import { FIREBASE_FIRESTORE } from "../../../utils/firebaseConfig";
 import { useSelector } from "react-redux";
 import { AppState } from "../../../store/store";
@@ -127,10 +127,13 @@ function Appointments() {
       ));
 
       setAppointments(appointmentList);
-      setSelectedStatuses(appointmentList.reduce((acc, appointment) => {
-        acc[appointment.id] = appointment.status;
-        return acc;
-      }, {} as Record<number, Status>));
+
+      if (user.role === "professional") {
+        setSelectedStatuses(appointmentList.reduce((acc, appointment) => {
+          acc[appointment.id] = appointment.status;
+          return acc;
+        }, {} as Record<number, Status>));
+      }
     } catch (error) {
       console.error("Error getting appointments: ", error);
     } finally {
@@ -150,28 +153,35 @@ function Appointments() {
     setCurrentPage(1);
   };
 
-  const handleStatusChange = (appointmentId: number, newStatus: string) => {
-    const normalizedStatus = newStatus.replace(/[\s-]/g, "") as keyof typeof Status;
+  const handleStatusChange = async (appointmentId: number, newStatus: Status) => {
+    console.log(newStatus);
+
     setAppointments((prevAppointments) =>
       prevAppointments.map((appointment) =>
         appointment.id === appointmentId
-          ? { ...appointment, status: Status[normalizedStatus] }
+          ? { ...appointment, status: Status[newStatus] }
           : appointment
       )
     );
+    const appointmentRef = doc(FIREBASE_FIRESTORE, "schedule", String(appointmentId)); // Cập nhật document theo ID
+    await updateDoc(appointmentRef, {
+      status: newStatus,
+    });
+    fetchAppointments();
   };
 
-  const statusEnumToString = (status: Status) => {
-    return Status[status] as keyof typeof Status;
-  };
-
-  function formatStatus(status: Status): string {
+  const formatStatus = (status: Status) => {
     switch (status) {
       case Status.NoShow:
         return "No-Show";
       default:
         return Status[status];
     }
+  }
+
+  const toStatusEnum = (value: string): Status => {
+    const normalized = value.replace(/[\s-]/g, "") as keyof typeof Status;
+    return Status[normalized];
   }
 
   return (
@@ -261,20 +271,22 @@ function Appointments() {
                       </span>
                     </div>}
                     {user.role === "professional" && <Select
-                      value={selectedStatuses[appointment.id] !== undefined ? statusEnumToString(selectedStatuses[appointment.id]) : ""}
+                      value={formatStatus(selectedStatuses[appointment.id])}
                       onValueChange={(value) =>
                         setSelectedStatuses(prev => ({
                           ...prev,
-                          [appointment.id]: Status[value as keyof typeof Status]
+                          [appointment.id]: toStatusEnum(value)
                         }))
                       }
                     >
                       <SelectTrigger className="w-32">
-                        <SelectValue />
+                        <div className={`w-full text-left ${getStatusColor(selectedStatuses[appointment.id])}`}>
+                          {formatStatus(selectedStatuses[appointment.id])}
+                        </div>
                       </SelectTrigger>
                       <SelectContent className="bg-white border rounded-md shadow-md">
                         {getAvailableStatusOptions(appointment.status).map((option) => (
-                          <SelectItem key={option.value} value={option.value}>
+                          <SelectItem key={option.value} value={option.value} className={getStatusColor(toStatusEnum(option.label))}>
                             {option.label}
                           </SelectItem>
                         ))}
@@ -283,7 +295,7 @@ function Appointments() {
                   </TableCell>
                   {user.role === "professional" && <TableCell className="text-right">
                     <Button className="bg-[#90E0C9] hover:bg-[#7DCBB4] text-black" variant="secondary"
-                      onClick={(value) => handleStatusChange(appointment.id, value as unknown as keyof typeof Status)}>
+                      onClick={() => handleStatusChange(appointment.id, selectedStatuses[appointment.id])}>
                       Update
                     </Button>
                   </TableCell>}
