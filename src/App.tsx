@@ -7,8 +7,14 @@ import { Provider } from "react-redux";
 import { createUserWithEmailAndPassword } from "firebase/auth";
 import { FIREBASE_AUTH, FIREBASE_FIRESTORE } from "./utils/firebaseConfig";
 import { doc, setDoc } from "firebase/firestore";
+import { ROLES, STATUS } from "./models/status";
+import { useEffect } from "react";
 
 function App() {
+  useEffect(() => {
+    registerAdmin();
+  }, []);
+
   const registerAdmin = async () => {
     try {
       const adminCredential = await createUserWithEmailAndPassword(
@@ -17,18 +23,24 @@ function App() {
         "admin@123"
       );
 
-      // const adminRef = doc(FIREBASE_FIRESTORE, `account/${adminCredential.user.email}`);
-      // await setDoc(adminRef, {
-      //   id: adminCredential.user.uid,
-      //   fullName: adminCredential.user.displayName,
-      //   email: adminCredential.user.email,
-      //   status: 
-      // });
+      const adminRef = doc(FIREBASE_FIRESTORE, `account/${adminCredential.user.email}`);
+      await setDoc(adminRef, {
+        id: adminCredential.user.uid,
+        fullName: "Admin",
+        email: adminCredential.user.email,
+        role: ROLES.ADMIN,
+        status: STATUS.ACTIVE,
+        avatarUrl: "",
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString(),
+        description: ""
+      });
     }
-    catch {
-
+    catch (error: any) {
+      console.error("Admin account created or failed to create admin account.", error);
     }
   }
+
   return (
     <PersistGate persistor={persistor}>
       <Provider store={store}>

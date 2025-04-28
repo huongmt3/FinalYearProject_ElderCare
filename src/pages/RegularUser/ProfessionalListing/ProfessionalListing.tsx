@@ -17,6 +17,7 @@ import {
 import { collection, getDocs, query, where } from "firebase/firestore";
 import { FIREBASE_FIRESTORE } from "../../../utils/firebaseConfig";
 import { useNavigate } from "react-router-dom";
+import { ROUTE_PATH } from "../../../routes/route-path";
 
 // const professionals = [
 //   {
@@ -149,7 +150,7 @@ function ProfessionalListing() {
 
   // Go to appointment booking page, set state for the target page
   const handleNavigate = (professional: any) => {
-    navigate('/user/appointment-booking', {
+    navigate(ROUTE_PATH.APPOINTMENT_BOOKING, {
       state: professional
     });
   };

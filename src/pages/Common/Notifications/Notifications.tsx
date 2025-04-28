@@ -15,6 +15,7 @@ import { FIREBASE_FIRESTORE } from '../../../utils/firebaseConfig';
 import { collection, getDocs, query, where } from 'firebase/firestore';
 import { ClipLoader } from 'react-spinners';
 import { useNavigate } from 'react-router-dom';
+import { ROUTE_PATH } from '../../../routes/route-path';
 
 function Notifications() {
   const navigate = useNavigate();
@@ -79,7 +80,7 @@ function Notifications() {
                   <p className="text-sm text-gray-500">{notification.content}</p>
                 </div>
                 <Button variant="ghost" className="text-primary hover:text-primary/90 hover:bg-transparent p-0 cursor-pointer"
-                  onClick={() => navigate("/professional/appointments")}>
+                  onClick={() => navigate(ROUTE_PATH.APPOINTMENTS)}>
                   View More
                 </Button>
               </CardContent>

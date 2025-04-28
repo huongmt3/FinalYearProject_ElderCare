@@ -10,18 +10,7 @@ import man from '../../../assets/images/man.png';
 import { doc } from "firebase/firestore";
 import { useDispatch } from "react-redux";
 import { setUser } from "./../../../store/userSlice";
-
-// Role and Status types
-const ROLES = {
-  USER: "user",
-  PROFESSIONAL: "professional",
-  ADMIN: "admin"
-} as const;
-
-const STATUS = {
-  ACTIVE: "active",
-  INACTIVE: "inactive"
-} as const;
+import { ROLES, STATUS } from "../../../models/status";
 
 // Default avatar URL
 const DEFAULT_AVATAR = "https://ui-avatars.com/api/?background=random&name=";
@@ -78,7 +67,8 @@ function Signup() {
         updatedAt: new Date().toISOString(),
         description: ""
       });
-    } catch (error: any) {
+    }
+    catch (error: any) {
       console.error("Error saving user data:", error);
       throw error;
     }

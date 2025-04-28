@@ -24,7 +24,7 @@ function Navbar() {
     dispatch(clearUser());
 
     // Chuyển hướng đến trang Home
-    navigate("/"); // Đường dẫn đến trang Home
+    navigate(ROUTE_PATH.HOME); // Đường dẫn đến trang Home
   };
 
   return (
