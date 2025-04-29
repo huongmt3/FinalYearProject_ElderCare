@@ -1,4 +1,4 @@
-import { createBrowserRouter } from "react-router-dom";
+import { createBrowserRouter, Navigate } from "react-router-dom";
 import { ROUTE_PATH } from "./route-path";
 import DefaultLayout from "../layouts/DefaultLayout";
 //Common
@@ -16,6 +16,8 @@ import ProfessionalProfile from "../pages/Professional/ProfessionalProfile/Profe
 import UserProfile from "../pages/RegularUser/UserProfile/UserProfile";
 import ProfessionalListing from "../pages/RegularUser/ProfessionalListing/ProfessionalListing";
 import AppointmentBooking from "../pages/RegularUser/AppointmentBooking/AppointmentBooking";
+import ManageAppointments from "../pages/Admin/Schedule/ManageAppointments";
+import UserList from "../pages/Admin/UserList/UserList";
 
 const router = createBrowserRouter([
   {
@@ -26,7 +28,7 @@ const router = createBrowserRouter([
         index: true,
         element: <HomePage />,
       },
-      
+
       {
         path: "*",
         element: <NotFound />,
@@ -59,7 +61,21 @@ const router = createBrowserRouter([
   },
   {
     path: ROUTE_PATH.ADMIN_DASHBOARD,
-    element: <Dashboard />
+    element: <Dashboard />,
+    children: [
+      {
+        index: true,
+        element: <Navigate to={ROUTE_PATH.ADMIN_USERLIST} replace />
+      },
+      {
+        path: ROUTE_PATH.ADMIN_USERLIST,
+        element: <UserList />
+      },
+      {
+        path: ROUTE_PATH.ADMIN_APPOINTMENTS,
+        element: <ManageAppointments />
+      },
+    ]
   },
   {
     path: ROUTE_PATH.LOGIN,

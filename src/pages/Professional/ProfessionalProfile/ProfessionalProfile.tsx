@@ -24,7 +24,7 @@ function ProfessionalProfile() {
     // password: "Your Password",
     pricing: user.pricing,
     description: user.description,
-    availableTimes: user.availableTimes,
+    availableTimes: user.availableTimes ? user.availableTimes : [],
   });
 
   const availableTimes = [

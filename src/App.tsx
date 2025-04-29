@@ -37,7 +37,7 @@ function App() {
       });
     }
     catch (error: any) {
-      console.error("Admin account created or failed to create admin account.", error);
+      console.error(error.message);
     }
   }
 

@@ -142,7 +142,6 @@ function AppointmentBooking() {
       const schedulesRef = collection(FIREBASE_FIRESTORE, "schedule");
       let queryConditions = [
         where("profEmail", "==", professional.email),
-        where("userEmail", "==", user.email),
         where("date", "==", dbDate),
       ];
 

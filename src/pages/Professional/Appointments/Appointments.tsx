@@ -23,7 +23,7 @@ import toast from "react-hot-toast";
 
 function Appointments() {
   const [searchQuery, setSearchQuery] = useState("");
-  const [statusFilter, setStatusFilter] = useState<keyof typeof Status | "All" | undefined>(undefined);
+  const [statusFilter, setStatusFilter] = useState<keyof typeof Status | "All">("All");
   const [rowsPerPage, setRowsPerPage] = useState("10");
   const [currentPage, setCurrentPage] = useState(1);
   const [isLoading, setIsLoading] = useState(true);
