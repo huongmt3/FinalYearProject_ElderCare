@@ -1,14 +1,15 @@
 import { Search } from "lucide-react";
 import { Input } from "../../../components/ui/Input";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@radix-ui/react-select";
-import { Avatar, AvatarFallback, AvatarImage } from "@radix-ui/react-avatar";
 import { Badge } from "../../../components/ui/Badge";
 import { Button } from "../../../components/ui/Button";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "../../../components/ui/Pagination";
 import { useEffect, useState } from "react";
 import { FIREBASE_FIRESTORE } from "../../../utils/firebaseConfig";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
 import { ClipLoader } from "react-spinners";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/Select";
+import { Avatar, AvatarFallback, AvatarImage } from "../../../components/ui/Avatar";
+import toast from "react-hot-toast";
 
 function UserList() {
     const [searchQuery, setSearchQuery] = useState("");
@@ -16,6 +17,8 @@ function UserList() {
     const [currentPage, setCurrentPage] = useState(1);
     const [users, setUsers] = useState<any[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [selectedRole, setSelectedRole] = useState("all");
+    const [selectedStatus, setSelectedStatus] = useState("all");
 
     useEffect(() => {
         fetchUsers();
@@ -23,9 +26,12 @@ function UserList() {
 
     const rowsPerPageNumber = parseInt(rowsPerPage, 10);
 
-    const filteredUsers = users.filter((user) =>
-        user.fullName.toLowerCase().includes(searchQuery.toLowerCase())
-    );
+    const filteredUsers = users.filter((user) => {
+        const matchSearch = user.fullName.toLowerCase().includes(searchQuery.toLowerCase());
+        const matchRole = selectedRole === "all" || user.role === selectedRole;
+        const matchStatus = selectedStatus === "all" || user.status.toLowerCase() === selectedStatus;
+        return matchSearch && matchRole && matchStatus;
+    });
 
     const totalPages = Math.ceil(filteredUsers.length / rowsPerPageNumber);
 
@@ -53,9 +59,24 @@ function UserList() {
         }
     }
 
+    const handleStatusToggle = async (userEmail: string, currentStatus: string) => {
+        const newStatus = currentStatus === "active" ? "inactive" : "active";
+        try {
+            const userRef = doc(FIREBASE_FIRESTORE, "account", userEmail);
+            await updateDoc(userRef, { status: newStatus });
+            setUsers(prev =>
+                prev.map(user =>
+                    user.email === userEmail ? { ...user, status: newStatus } : user
+                )
+            );
+            toast.success("Update user status successfully!");
+        } catch (error) {
+            toast.error("Failed to update user status!");
+        }
+    };
+
     return (
-        /* User List Content */
-        < div className="flex-1 p-6" >
+        <div className="flex-1 p-6">
             <div className="mb-6">
                 <h1 className="text-2xl font-bold">User List</h1>
                 <p className="text-gray-500">View and manage all users</p>
@@ -69,30 +90,35 @@ function UserList() {
                         value={searchQuery}
                         onChange={(e) => {
                             setSearchQuery(e.target.value);
-                            setCurrentPage(1); // Reset to page 1 when searching
+                            setCurrentPage(1);
                         }}
                         className="pl-10 pr-4 border rounded-md"
                     />
                     <Search className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
                 </div>
                 <div className="flex gap-4">
-                    <Select defaultValue="all">
+                    <Select defaultValue="all" onValueChange={(value) => {
+                        setSelectedRole(value);
+                        setCurrentPage(1);
+                    }}>
                         <SelectTrigger className="w-32">
                             <SelectValue placeholder="Role" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-white">
                             <SelectItem value="all">Role</SelectItem>
-                            <SelectItem value="admin">Admin</SelectItem>
-                            <SelectItem value="regular">Regular User</SelectItem>
+                            <SelectItem value="user">Regular User</SelectItem>
                             <SelectItem value="professional">Professional</SelectItem>
                         </SelectContent>
                     </Select>
 
-                    <Select defaultValue="all">
+                    <Select defaultValue="all" onValueChange={(value) => {
+                        setSelectedStatus(value);
+                        setCurrentPage(1);
+                    }}>
                         <SelectTrigger className="w-32">
                             <SelectValue placeholder="Status" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-white">
                             <SelectItem value="all">Status</SelectItem>
                             <SelectItem value="active">Active</SelectItem>
                             <SelectItem value="inactive">Inactive</SelectItem>
@@ -133,12 +159,12 @@ function UserList() {
                                 <div>
                                     <Badge
                                         variant="outline"
-                                        className={`rounded-full ${user.status === 'Active'
+                                        className={`rounded-full ${user.status === 'active'
                                             ? 'bg-[#F2FCE2] text-[#00a67d] border-[#00a67d]'
                                             : 'bg-[#FFEBEE] text-[#ea384c] border-[#ea384c]'
                                             }`}
                                     >
-                                        <span className={`h-2 w-2 rounded-full inline-block mr-2 ${user.status === 'Active' ? 'bg-[#00a67d]' : 'bg-[#ea384c]'
+                                        <span className={`h-2 w-2 rounded-full inline-block mr-2 ${user.status === 'active' ? 'bg-[#00a67d]' : 'bg-[#ea384c]'
                                             }`}></span>
                                         {user.status}
                                     </Badge>
@@ -147,15 +173,21 @@ function UserList() {
                                 <div className="text-right">
                                     <Button
                                         variant="outline"
-                                        className="bg-[#B2F2E5] hover:bg-[#A0E0D3] text-[#00a67d] border-none"
+                                        className={"border-none cursor-pointer " +
+                                            (user.status === "active"
+                                                ? "bg-[#FFEBEE] hover:bg-[#f8d7da] text-[#ea384c]"
+                                                : "bg-[#B2F2E5] hover:bg-[#A0E0D3] text-[#00a67d]")
+                                        }
+                                        onClick={() => handleStatusToggle(user.email, user.status)}
                                     >
-                                        Change
+                                        {user.status === "active" ? "Deactivate" : "Activate"}
                                     </Button>
                                 </div>
                             </div>
                         ))}
                     </div>
-                </div>)}
+                </div>)
+            }
 
             {/* Pagination */}
             <div className="mt-6 flex items-center justify-between mb-10">
@@ -168,7 +200,7 @@ function UserList() {
                         <SelectTrigger className="w-16 h-8">
                             <SelectValue placeholder="10" />
                         </SelectTrigger>
-                        <SelectContent>
+                        <SelectContent className="bg-white">
                             <SelectItem value="5">5</SelectItem>
                             <SelectItem value="10">10</SelectItem>
                             <SelectItem value="20">20</SelectItem>
@@ -214,9 +246,9 @@ function UserList() {
                         )}
                     </PaginationContent>
                 </Pagination>
-
             </div>
-        </div >);
+        </div >
+    );
 }
 
 export default UserList;

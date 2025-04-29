@@ -6,7 +6,7 @@ export const ROUTE_PATH = {
     NOTIFICATIONS: '/notifications',
 
     //Admin
-    ADMIN_DASHBOARD: "/admin",
+    ADMIN: "/admin",
     ADMIN_USERLIST: "userlist",
     ADMIN_APPOINTMENTS: "appointments",
 

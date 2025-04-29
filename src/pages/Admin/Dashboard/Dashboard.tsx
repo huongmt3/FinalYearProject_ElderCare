@@ -1,17 +1,33 @@
-import { Link, NavLink, Outlet } from "react-router-dom";
-import { Search, ChevronDown } from "lucide-react";
-import { Input } from "../../../components/ui/Input";
-import { Avatar, AvatarFallback, AvatarImage } from "../../../components/ui/Avatar";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import { ROUTE_PATH } from '../../../routes/route-path';
 import logo from "../../../assets/images/logo.svg";
-import avatar from "../../../assets/images/avatar.png";
 import logout from "../../../assets/images/logout.png";
 import imgScheduleGray from "../../../assets/images/schedule-gray.png";
 import imgScheduleWhite from "../../../assets/images/schedule-white.png";
 import imgUserListGray from "../../../assets/images/user-list-icon-gray.png";
 import imgUserListWhite from "../../../assets/images/dashboard-logo.png";
+import { useDispatch, useSelector } from "react-redux";
+import { clearUser } from "../../../store/userSlice";
+import { AppState } from "../../../store/store";
+import { useEffect } from "react";
 
 function Dashboard() {
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    dispatch(clearUser());
+    navigate(ROUTE_PATH.HOME); // điều hướng thủ công
+  };
+
+  const user = useSelector((state: AppState) => state.user);
+
+  useEffect(() => {
+    if (user && user?.role !== "admin") {
+      navigate(ROUTE_PATH.HOME);
+    }
+  }, [user, navigate]);
+
   return (
     <div className="flex h-screen bg-white">
       {/* Sidebar */}
@@ -56,19 +72,22 @@ function Dashboard() {
             )}
           </NavLink>
 
-          <Link to={ROUTE_PATH.HOME} className="flex items-center p-4 text-gray-700 hover:bg-gray-100">
+          <div
+            onClick={handleLogout}
+            className="flex items-center p-4 text-gray-700 hover:bg-gray-100 cursor-pointer"
+          >
             <span className="mr-2">
               <img src={logout} alt="Log Out Icon" className="h-6" />
             </span>
             Log Out
-          </Link>
+          </div>
         </div>
       </div>
 
       {/* Main Content */}
       <div className="flex-1 p-6 overflow-y-auto">
         {/* Top Navigation */}
-        <header className="border-b py-4 px-6 flex justify-between items-center">
+        {/* <header className="border-b py-4 px-6 flex justify-between items-center">
           <div className="relative w-96">
             <Input
               placeholder="Search"
@@ -84,7 +103,7 @@ function Dashboard() {
             <span className="font-semibold">Huong</span>
             <ChevronDown className="h-4 w-4" />
           </div>
-        </header>
+        </header> */}
 
         <Outlet />
 

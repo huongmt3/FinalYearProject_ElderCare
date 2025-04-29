@@ -60,7 +60,7 @@ const router = createBrowserRouter([
     ],
   },
   {
-    path: ROUTE_PATH.ADMIN_DASHBOARD,
+    path: ROUTE_PATH.ADMIN,
     element: <Dashboard />,
     children: [
       {

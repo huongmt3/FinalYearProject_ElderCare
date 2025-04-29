@@ -51,7 +51,7 @@ function Login() {
           avatarUrl: userData.avatarUrl,
         }));
         toast.success("Logged In Successfully!");
-        navigate(userData.role === "admin" ? ROUTE_PATH.ADMIN_DASHBOARD : ROUTE_PATH.HOME);
+        navigate(userData.role === "admin" ? ROUTE_PATH.ADMIN : ROUTE_PATH.HOME);
       } else {
         toast.error("User data not found in Firestore!");
       }
