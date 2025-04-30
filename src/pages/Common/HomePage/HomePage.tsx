@@ -2,7 +2,6 @@ import { Link, useNavigate } from 'react-router-dom';
 import doctorcare from '../../../assets/images/doctor-care.png';
 import heart from '../../../assets/images/doctor-n-heart.png';
 import hospital from '../../../assets/images/hospital.png';
-import man from '../../../assets/images/man.png';
 import { useSelector } from 'react-redux';
 import { AppState } from '../../../store/store';
 import { useEffect, useState } from 'react';

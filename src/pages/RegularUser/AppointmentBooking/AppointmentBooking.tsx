@@ -14,7 +14,7 @@ import toast from 'react-hot-toast';
 function AppointmentBooking() {
   const location = useLocation();
 
-  const [professional, setProfessional] = useState(location.state || {});
+  const professional = location.state;
   const [availableTimes, setAvailableTimes] = useState(professional.availableTimes);
   const user = useSelector((state: AppState) => state.user);
 

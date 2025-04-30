@@ -7,7 +7,7 @@ import { Status } from "../../../models/enums/status.enum";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../../../components/ui/Select";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "../../../components/ui/Pagination";
 import { Input } from "../../../components/ui/Input";
-import { collection, getDocs, query, where } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 import { FIREBASE_FIRESTORE } from "../../../utils/firebaseConfig";
 
 function ManageAppointments() {
@@ -108,7 +108,7 @@ function ManageAppointments() {
             ));
             appointmentList.sort((a, b) => b.dateTime.localeCompare(a.dateTime));
             console.log(appointmentList);
-            
+
             setAppointments(appointmentList);
         } catch (error) {
             console.error("Error getting appointments: ", error);

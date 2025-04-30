@@ -1,10 +1,10 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from '../../../components/ui/Avatar';
 import { Button } from '../../../components/ui/Button';
 import { Input } from '../../../components/ui/Input';
 import { TextArea } from '../../../components/ui/TextArea';
 import { Card, CardContent } from '../../../components/ui/card';
-import { Search, Bell } from "lucide-react";
+import { Bell } from "lucide-react";
 import { useDispatch, useSelector } from "react-redux";
 import { AppState } from "./../../../store/store";
 import { FIREBASE_FIRESTORE } from "../../../utils/firebaseConfig";

@@ -1,6 +1,5 @@
 import { useState } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
-import "./NavBar.css";
 import { ROUTE_PATH } from "../../../routes/route-path";
 import logo from "../../../assets/images/logo.svg";
 import { useSelector } from "react-redux";

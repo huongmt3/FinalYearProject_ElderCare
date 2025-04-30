@@ -13,7 +13,6 @@ const AuthLayout: React.FC<AuthLayoutProps> = ({
   children, 
   title, 
   subtitle,
-  illustration = false,
 }) => {
 
   return (
