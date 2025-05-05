@@ -40,6 +40,12 @@ function Login() {
       if (userDoc.exists()) {
         const userData = userDoc.data();
 
+        if (userData.status === "inactive") {
+          toast.error("This account has been disabled, contact admin for more details.");
+          navigate("*");
+          return;
+        }
+
         // Set user info to redux store
         dispatch(setUser({
           email: userData.email,
