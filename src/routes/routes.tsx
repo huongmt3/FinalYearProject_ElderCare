@@ -18,6 +18,7 @@ import ProfessionalListing from "../pages/RegularUser/ProfessionalListing/Profes
 import AppointmentBooking from "../pages/RegularUser/AppointmentBooking/AppointmentBooking";
 import ManageAppointments from "../pages/Admin/Schedule/ManageAppointments";
 import UserList from "../pages/Admin/UserList/UserList";
+import ProfessionalUserProfile from "../pages/Professional/ProfessionalUserProfile/ProfessionalUserProfile";
 
 const router = createBrowserRouter([
   {
@@ -52,6 +53,10 @@ const router = createBrowserRouter([
       {
         path: ROUTE_PATH.PROFESSIONAL_LISTING,
         element: <ProfessionalListing />,
+      },
+      {
+        path: ROUTE_PATH.PROFESSIONAL_USERPROFILE,
+        element: <ProfessionalUserProfile/>,
       },
       {
         path: ROUTE_PATH.APPOINTMENT_BOOKING,

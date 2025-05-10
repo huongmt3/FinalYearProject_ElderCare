@@ -20,8 +20,11 @@ import { useSelector } from "react-redux";
 import { AppState } from "../../../store/store";
 import { Status } from "../../../models/enums/status.enum";
 import toast from "react-hot-toast";
+import { ROUTE_PATH } from "../../../routes/route-path";
+import { useNavigate } from "react-router-dom";
 
 function Appointments() {
+  const navigate = useNavigate();
   const [searchQuery, setSearchQuery] = useState("");
   const [statusFilter, setStatusFilter] = useState<keyof typeof Status | "All">("All");
   const [rowsPerPage, setRowsPerPage] = useState("10");
@@ -266,7 +269,11 @@ function Appointments() {
             <TableBody>
               {currentAppointments.map((appointment) => (
                 <TableRow key={appointment.id}>
-                  {user.role !== "user" && <TableCell>
+                  {user.role !== "user" && <TableCell onClick={() => {
+                    navigate(ROUTE_PATH.PROFESSIONAL_USERPROFILE, {
+                      state: appointment.userEmail
+                    })
+                  }}>
                     <div className="flex items-center space-x-3">
                       <Avatar>
                         <AvatarImage src={appointment.userAvatarUrl} alt={appointment.userFullName} />

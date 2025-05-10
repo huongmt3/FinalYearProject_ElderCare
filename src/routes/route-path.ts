@@ -13,6 +13,7 @@ export const ROUTE_PATH = {
     //Professional
     APPOINTMENTS: "/professional/appointments",
     PROFESSIONAL_PROFILE: "/professional/professional-profile",
+    PROFESSIONAL_USERPROFILE: "/professional/user-profile",
 
     //Regular User
     USER_PROFILE: "/user/user-profile",
