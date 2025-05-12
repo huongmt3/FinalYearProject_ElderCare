@@ -52,12 +52,14 @@ function ProfessionalProfile() {
     const userRef = doc(FIREBASE_FIRESTORE, `account/${user.email}`);
     try {
       await updateDoc(userRef, profileData);
+
       dispatch(updateUser({
         fullName: profileData.fullName,
         pricing: profileData.pricing,
         description: profileData.description,
         availableTimes: profileData.availableTimes,
       }));
+
       setFullName(profileData.fullName);
       toast.success("Profile Updated Successfully!");
       setIsEditMode(false); // Exit edit mode
@@ -176,7 +178,7 @@ function ProfessionalProfile() {
               <TextArea
                 value={profileData.description}
                 onChange={(e) => setProfileData({ ...profileData, description: e.target.value })}
-                className={`bg-gray-50 min-h-[120px] ${isEditMode ? "bg-white" : ""}`}
+                className={`bg-gray-50 min-h-[120px] whitespace-pre-line ${isEditMode ? "bg-white" : ""}`}
                 readOnly={!isEditMode}
               />
             </div>

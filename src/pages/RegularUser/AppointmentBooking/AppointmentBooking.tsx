@@ -239,7 +239,7 @@ function AppointmentBooking() {
           <Card className="border rounded-lg shadow-sm">
             <CardContent className="p-4 bg-gray-100">
               <h2 className="text-lg font-semibold text-gray-900 mb-4">Overview</h2>
-              <p className="text-sm text-gray-700">
+              <p className="text-sm text-gray-700 whitespace-pre-line">
                 {professional.description}
               </p>
             </CardContent>

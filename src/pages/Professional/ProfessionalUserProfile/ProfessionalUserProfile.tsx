@@ -65,7 +65,7 @@ function ProfessionalUserProfile() {
                             <h3 className="font-medium mb-2">Description</h3>
                             <TextArea
                                 value={user.description}
-                                className={"bg-gray-50 min-h-[120px]"}
+                                className={" bg-gray-50 text-sm text-gray-700 whitespace-pre-line"}
                                 readOnly
                             />
                         </div>
