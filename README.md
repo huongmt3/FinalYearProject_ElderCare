@@ -45,7 +45,15 @@ To use Docker for deploying the application:
 3. **Successfully deployed!**
 
   After a successful build, the deployed website will be accessible via the address:
-  http://192.168.76:3000
+  <span style="color:blue; text-decoration:underline;"><i>http://{your IPv4 Address}:3000</i></span>
+
+  - **To get your IPv4 Address**:
+    + Open command prompt
+    + Enter 
+      ```bash
+      ipconfig
+      ```
+    + Find IPv4 Address and replace it in <span style="color:blue; text-decoration:underline;"><i>http://{your IPv4 Address}:3000</i></span>
 
 ## Key Features
 

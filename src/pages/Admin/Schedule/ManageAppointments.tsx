@@ -234,28 +234,35 @@ function ManageAppointments() {
                     <span className="text-sm text-gray-500">Rows</span>
                 </div>
 
-                <Pagination>
-                    <PaginationContent>
-                        <PaginationItem>
-                            <PaginationPrevious href="#" onClick={() => handlePageChange(currentPage - 1)} />
-                        </PaginationItem>
+                <Pagination className="mt-8">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                className={currentPage === 1 ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
+              />
+            </PaginationItem>
 
-                        {Array.from({ length: totalPages }, (_, i) => (
-                            <PaginationItem key={i}>
-                                <PaginationLink
-                                    isActive={currentPage === i + 1}
-                                    onClick={() => handlePageChange(i + 1)}
-                                >
-                                    {i + 1}
-                                </PaginationLink>
-                            </PaginationItem>
-                        ))}
+            {[...Array(totalPages)].map((_, index) => (
+              <PaginationItem key={index}>
+                <PaginationLink
+                  onClick={() => handlePageChange(index + 1)}
+                  isActive={currentPage === index + 1}
+                  className={currentPage === index + 1 ? "bg-emerald-700 text-white" : ""}
+                >
+                  {index + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
 
-                        <PaginationItem>
-                            <PaginationNext href="#" onClick={() => handlePageChange(currentPage + 1)} />
-                        </PaginationItem>
-                    </PaginationContent>
-                </Pagination>
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                className={currentPage === totalPages ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
             </div>
         </div>
     );

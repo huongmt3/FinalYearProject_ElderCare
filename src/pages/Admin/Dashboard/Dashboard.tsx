@@ -17,7 +17,7 @@ function Dashboard() {
 
   const handleLogout = () => {
     dispatch(clearUser());
-    navigate(ROUTE_PATH.HOME); // điều hướng thủ công
+    navigate(ROUTE_PATH.HOME);
   };
 
   const user = useSelector((state: AppState) => state.user);

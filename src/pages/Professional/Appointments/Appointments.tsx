@@ -372,23 +372,29 @@ function Appointments() {
         <Pagination>
           <PaginationContent>
             <PaginationItem>
-              <PaginationPrevious href="#" onClick={() => handlePageChange(currentPage - 1)} />
+              <PaginationPrevious
+                onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                className={currentPage === 1 ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
+              />
             </PaginationItem>
 
-            {Array.from({ length: totalPages }, (_, i) => (
-              <PaginationItem key={i}>
+            {[...Array(totalPages)].map((_, index) => (
+              <PaginationItem key={index}>
                 <PaginationLink
-                  href="#"
-                  isActive={currentPage === i + 1}
-                  onClick={() => handlePageChange(i + 1)}
+                  onClick={() => handlePageChange(index + 1)}
+                  isActive={currentPage === index + 1}
+                  className={currentPage === index + 1 ? "bg-emerald-700 text-white" : ""}
                 >
-                  {i + 1}
+                  {index + 1}
                 </PaginationLink>
               </PaginationItem>
             ))}
 
             <PaginationItem>
-              <PaginationNext href="#" onClick={() => handlePageChange(currentPage + 1)} />
+              <PaginationNext
+                onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                className={currentPage === totalPages ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
+              />
             </PaginationItem>
           </PaginationContent>
         </Pagination>

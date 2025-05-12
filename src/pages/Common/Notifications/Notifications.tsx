@@ -103,7 +103,7 @@ function Notifications() {
                 <PaginationLink
                   onClick={() => handlePageChange(index + 1)}
                   isActive={currentPage === index + 1}
-                  className={currentPage === index + 1 ? "bg-primary text-white" : ""}
+                  className={currentPage === index + 1 ? "bg-emerald-700 text-white" : ""}
                 >
                   {index + 1}
                 </PaginationLink>

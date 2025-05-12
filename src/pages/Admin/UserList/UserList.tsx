@@ -20,6 +20,11 @@ function UserList() {
     const [selectedRole, setSelectedRole] = useState("all");
     const [selectedStatus, setSelectedStatus] = useState("all");
 
+    // Handle page change
+    const handlePageChange = (page: number) => {
+        setCurrentPage(page);
+    };
+
     useEffect(() => {
         fetchUsers();
     }, [])
@@ -210,42 +215,35 @@ function UserList() {
                     <span className="text-sm text-gray-500">Row</span>
                 </div>
 
-                <Pagination>
-                    <PaginationContent>
-                        {/* Previous Button */}
-                        {currentPage > 1 && (
-                            <PaginationItem>
-                                <PaginationPrevious
-                                    onClick={() => setCurrentPage(currentPage - 1)}
-                                    className="cursor-pointer"
-                                />
-                            </PaginationItem>
-                        )}
+                <Pagination className="mt-8">
+          <PaginationContent>
+            <PaginationItem>
+              <PaginationPrevious
+                onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                className={currentPage === 1 ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
+              />
+            </PaginationItem>
 
-                        {/* Page Numbers */}
-                        {Array.from({ length: totalPages }, (_, index) => (
-                            <PaginationItem key={index}>
-                                <PaginationLink
-                                    onClick={() => setCurrentPage(index + 1)}
-                                    isActive={currentPage === index + 1}
-                                    className="cursor-pointer"
-                                >
-                                    {index + 1}
-                                </PaginationLink>
-                            </PaginationItem>
-                        ))}
+            {[...Array(totalPages)].map((_, index) => (
+              <PaginationItem key={index}>
+                <PaginationLink
+                  onClick={() => handlePageChange(index + 1)}
+                  isActive={currentPage === index + 1}
+                  className={currentPage === index + 1 ? "bg-emerald-700 text-white" : ""}
+                >
+                  {index + 1}
+                </PaginationLink>
+              </PaginationItem>
+            ))}
 
-                        {/* Next Button */}
-                        {currentPage < totalPages && (
-                            <PaginationItem>
-                                <PaginationNext
-                                    onClick={() => setCurrentPage(currentPage + 1)}
-                                    className="cursor-pointer"
-                                />
-                            </PaginationItem>
-                        )}
-                    </PaginationContent>
-                </Pagination>
+            <PaginationItem>
+              <PaginationNext
+                onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                className={currentPage === totalPages ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
+              />
+            </PaginationItem>
+          </PaginationContent>
+        </Pagination>
             </div>
         </div >
     );

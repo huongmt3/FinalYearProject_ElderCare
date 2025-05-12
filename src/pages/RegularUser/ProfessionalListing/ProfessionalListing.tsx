@@ -16,66 +16,6 @@ import { FIREBASE_FIRESTORE } from "../../../utils/firebaseConfig";
 import { useNavigate } from "react-router-dom";
 import { ROUTE_PATH } from "../../../routes/route-path";
 
-// const professionals = [
-//   {
-//     id: 1,
-//     title: "Create An LMS Website With LearnPress",
-//     category: "Mental Health & Well-Being",
-//     image: "https://plus.unsplash.com/premium_photo-1658506671316-0b293df7c72b?q=80&w=1470&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
-//     price: "$125/hour",
-//     rating: 4,
-//   },
-//   {
-//     id: 2,
-//     title: "Create An LMS Website With LearnPress",
-//     category: "Pulmonology",
-//     image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
-//     price: "$125/hour",
-//     rating: 4,
-//   },
-//   {
-//     id: 3,
-//     title: "Create An LMS Website With LearnPress",
-//     category: "Orthopedics",
-//     image: "https://images.unsplash.com/photo-1488590528505-98d2b5aba04b",
-//     price: "$125/hour",
-//     rating: 4,
-//   },
-//   {
-//     id: 4,
-//     title: "Create An LMS Website With LearnPress",
-//     category: "Neurology",
-//     image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
-//     price: "$125/hour",
-//     rating: 4,
-//   },
-//   {
-//     id: 5,
-//     title: "Create An LMS Website With LearnPress",
-//     category: "Cardiology",
-//     image: "https://images.unsplash.com/photo-1581091226825-a6a2a5aee158",
-//     price: "$125/hour",
-//     rating: 4,
-//   },
-//   {
-//     id: 6,
-//     title: "Create An LMS Website With LearnPress",
-//     category: "Nutrition & Lifestyle Advice",
-//     image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
-//     price: "$125/hour",
-//     rating: 4,
-//   },
-//   {
-//     id: 7,
-//     title: "Create An LMS Website With LearnPress",
-//     category: "Nutrition & Lifestyle Advice",
-//     image: "https://images.unsplash.com/photo-1486312338219-ce68d2c6f44d",
-//     price: "$125/hour",
-//     rating: 4,
-//   },
-//   // Add more items if needed
-// ];
-
 const ITEMS_PER_PAGE = 6;
 
 function ProfessionalListing() {
@@ -207,34 +147,27 @@ function ProfessionalListing() {
           <PaginationContent>
             <PaginationItem>
               <PaginationPrevious
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (currentPage > 1) handlePageChange(currentPage - 1);
-                }}
+                onClick={() => currentPage > 1 && handlePageChange(currentPage - 1)}
+                className={currentPage === 1 ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
               />
             </PaginationItem>
+
             {[...Array(totalPages)].map((_, index) => (
               <PaginationItem key={index}>
                 <PaginationLink
-                  href="#"
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handlePageChange(index + 1);
-                  }}
-                  isActive={index + 1 === currentPage}
+                  onClick={() => handlePageChange(index + 1)}
+                  isActive={currentPage === index + 1}
+                  className={currentPage === index + 1 ? "bg-emerald-700 text-white" : ""}
                 >
                   {index + 1}
                 </PaginationLink>
               </PaginationItem>
             ))}
+
             <PaginationItem>
               <PaginationNext
-                href="#"
-                onClick={(e) => {
-                  e.preventDefault();
-                  if (currentPage < totalPages) handlePageChange(currentPage + 1);
-                }}
+                onClick={() => currentPage < totalPages && handlePageChange(currentPage + 1)}
+                className={currentPage === totalPages ? "cursor-not-allowed opacity-50" : "cursor-pointer"}
               />
             </PaginationItem>
           </PaginationContent>

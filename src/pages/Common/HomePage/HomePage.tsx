@@ -306,7 +306,7 @@ function HomePage() {
       </section>
 
       {/* Call To Action */}
-      <section className="py-12 bg-gray-50">
+      {user?.role !== "professional" && <section className="py-12 bg-gray-50">
         <div className="container mx-auto px-4">
           <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-8 md:p-12 flex flex-col md:flex-row items-center justify-between">
             <div className="flex items-center mb-6 md:mb-0">
@@ -335,7 +335,7 @@ function HomePage() {
             </div>
           </div>
         </div>
-      </section>
+      </section>}
     </div >
   );
 }
