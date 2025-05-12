@@ -11,8 +11,11 @@ import { FIREBASE_FIRESTORE } from "../../../utils/firebaseConfig";
 import { doc, updateDoc } from "firebase/firestore";
 import toast from "react-hot-toast";
 import { updateUser } from "./../../../store/userSlice";
+import { useNavigate } from "react-router-dom";
+import { ROUTE_PATH } from "../../../routes/route-path";
 
 function UserProfile() {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector((state: AppState) => state.user);
   const [isEditMode, setIsEditMode] = useState(false); // State to toggle edit mode
@@ -65,44 +68,22 @@ function UserProfile() {
       {/* Top Navigation */}
       <div className="flex justify-between items-center p-4 border-b">
         <div>
-          <h1 className="text-xl font-semibold">Welcome, User</h1>
-          <p className="text-sm text-gray-500">Tue, 07 June 2022</p>
+          <h1 className="text-xl font-semibold">Welcome, {user.fullName}</h1>
+          <p className="text-sm text-gray-500">{new Date().toLocaleDateString("en-US", 
+            { weekday: 'short', day: '2-digit', month: 'long', year: 'numeric' })}</p>
         </div>
         <div className="flex items-center gap-4">
 
-          <Bell className="w-5 h-5 text-gray-500" />
+          <Bell 
+          className="w-5 h-5 text-gray-500 cursor-pointer" 
+          onClick={() => navigate(ROUTE_PATH.NOTIFICATIONS)} 
+          />
           <Avatar>
             <AvatarImage src={user.avatarUrl} alt="Profile" />
             <AvatarFallback>CN</AvatarFallback>
           </Avatar>
         </div>
       </div>
-
-      {/* Sidebar */}
-      <div className="flex">
-        <div className="w-16 min-h-screen bg-gray-100 flex flex-col items-center py-6 space-y-6">
-          <div className="p-2 rounded-lg bg-teal-500 text-white">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-user">
-              <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2" />
-              <circle cx="12" cy="7" r="4" />
-            </svg>
-          </div>
-          <div className="p-2 rounded-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-layout-dashboard">
-              <rect width="7" height="9" x="3" y="3" rx="1" />
-              <rect width="7" height="5" x="14" y="3" rx="1" />
-              <rect width="7" height="9" x="14" y="12" rx="1" />
-              <rect width="7" height="5" x="3" y="16" rx="1" />
-            </svg>
-          </div>
-          <div className="p-2 rounded-lg">
-            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-log-out">
-              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1-2-2h4" />
-              <polyline points="16 17 21 12 16 7" />
-              <line x1="21" x2="9" y1="12" y2="12" />
-            </svg>
-          </div>
-        </div>
 
         {/* Main Content */}
         <div className="flex-1 p-6">
@@ -199,7 +180,6 @@ function UserProfile() {
           </div>
         </div>
       </div>
-    </div>
   );
 };
 

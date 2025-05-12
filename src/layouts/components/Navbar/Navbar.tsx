@@ -22,8 +22,7 @@ function Navbar() {
   const handleLogout = () => {
     dispatch(clearUser());
 
-    // Chuyển hướng đến trang Home
-    navigate(ROUTE_PATH.HOME); // Đường dẫn đến trang Home
+    navigate(ROUTE_PATH.HOME);
   };
 
   return (
@@ -113,10 +112,14 @@ function Navbar() {
         {role !== "" && <div className="flex items-center space-x-3 relative">
           <span className="text-gray-700">{user.fullName}</span>
           <div
-            className="w-10 h-10 bg-blue-500 rounded-full flex items-center justify-center text-white cursor-pointer mr-0"
+            className="w-10 h-10 rounded-full overflow-hidden cursor-pointer mr-0"
             onClick={toggleDropdown}
           >
-            SS
+            <img
+              src={user.avatarUrl || "https://via.placeholder.com/40"} // Placeholder nếu không có avatar
+              alt="User Avatar"
+              className="w-full h-full object-cover"
+            />
           </div>
           {isDropdownVisible && (
             <div className="absolute right-0 top-12 w-32 bg-white border rounded-lg shadow-lg">
