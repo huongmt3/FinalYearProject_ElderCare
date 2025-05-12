@@ -189,7 +189,7 @@ function Appointments() {
         sentTo: appointment.userEmail,
         personRelated: user.email,
         title: "Appointment Updated",
-        content: `${appointment.userFullName} has updated status of the appointment on ${appointment.date} at ${appointment.time} to ${formatStatus(newStatus)}.`,
+        content: `${appointment.profFullName} has updated status of the appointment on ${appointment.date} at ${appointment.time} to ${formatStatus(newStatus)}.`,
         createdAt: new Date().toISOString(),
       });
     }
